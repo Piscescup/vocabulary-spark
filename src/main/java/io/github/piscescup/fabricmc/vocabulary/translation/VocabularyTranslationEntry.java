@@ -22,6 +22,7 @@ import java.util.Set;
  * <p>Display methods create formatted components on request. Unrecognized
  * part-of-speech text remains available through {@link #partOfSpeechLabel()}.
  *
+ * @param id the source definition ID, used for ascending ordering
  * @param rawPartOfSpeech the source part-of-speech label, or {@code null}
  * @param englishText the English definition, or {@code null}
  * @param chineseText the Chinese translation, or {@code null}
@@ -33,6 +34,9 @@ import java.util.Set;
  * @since 1.0.0
  */
 public record VocabularyTranslationEntry(
+    @SerializedName("id")
+    int id,
+
     @SerializedName("pos")
     String rawPartOfSpeech,
 
@@ -53,6 +57,7 @@ public record VocabularyTranslationEntry(
     /**
      * Creates a sense with normalized text and unmodifiable collection snapshots.
      *
+     * @param id the source definition ID, used for ascending ordering
      * @param rawPartOfSpeech the source part-of-speech label, or {@code null}
      * @param englishText the English definition, or {@code null}
      * @param chineseText the Chinese translation, or {@code null}

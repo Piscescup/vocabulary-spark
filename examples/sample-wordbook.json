@@ -1,0 +1,15 @@
+{
+  "formatVersion": 1,
+  "id": "vocabulary-spark-sample",
+  "name": "示例单词本",
+  "words": [
+    "spark",
+    "abandon",
+    "ability",
+    "achieve",
+    "adventure",
+    "create",
+    "discover",
+    "improve"
+  ]
+}

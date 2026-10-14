@@ -4,6 +4,9 @@ plugins {
 }
 
 repositories {
+	maven("https://api.modrinth.com/maven") {
+		content { includeGroup("maven.modrinth") }
+	}
 	// Add repositories to retrieve artifacts from in here.
 	// You should only use this when depending on other mods because
 	// Loom adds the essential maven repositories to download Minecraft and libraries from automatically.
@@ -25,6 +28,15 @@ dependencies {
 
 	// Fabric API. This is technically optional, but you probably want it anyway.
 	implementation("net.fabricmc.fabric-api:fabric-api:${providers.gradleProperty("fabric_api_version").get()}")
+	implementation("maven.modrinth:tcdcommons:${providers.gradleProperty("tcdcommons_version").get()}")
+
+	testImplementation(platform("org.junit:junit-bom:5.11.4"))
+	testImplementation("org.junit.jupiter:junit-jupiter")
+	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+}
+
+tasks.test {
+	useJUnitPlatform()
 }
 
 tasks.processResources {

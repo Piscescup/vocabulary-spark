@@ -166,8 +166,7 @@ public record Vocabulary(
      */
     @Override
     public SortedSet<TranslationEntry> translations() {
-        SortedSet<TranslationEntry> translations = new TreeSet<>();
-        translations.addAll(rawTranslations);
+        SortedSet<TranslationEntry> translations = new TreeSet<>(rawTranslations);
         return Collections.unmodifiableSortedSet(translations);
     }
 

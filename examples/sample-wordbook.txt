@@ -1,0 +1,8 @@
+spark
+abandon
+ability
+achieve
+adventure
+create
+discover
+improve

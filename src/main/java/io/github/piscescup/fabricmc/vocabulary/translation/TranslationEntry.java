@@ -19,7 +19,8 @@ import java.util.Set;
  * transitivity, independently of its part of speech. Implementations may retain
  * an unrecognized source part-of-speech label through {@link #partOfSpeechLabel()}.
  *
- * <p>The natural order compares the displayed texts and grammatical information.
+ * <p>The natural order compares source IDs first, followed by displayed texts
+ * and grammatical information when IDs are equal.
  * Component styling does not distinguish entries in this order. Implementations
  * used in sorted collections must keep all comparison data stable and should
  * make their equality consistent with this ordering.
@@ -31,6 +32,13 @@ import java.util.Set;
 public interface TranslationEntry
     extends Comparable<TranslationEntry>
 {
+    /**
+     * Returns the source definition ID used as the primary sort key.
+     *
+     * @return the definition ID supplied by the dictionary
+     */
+    int id();
+
     /**
      * Returns the recognized part of speech for this sense.
      *
@@ -89,6 +97,7 @@ public interface TranslationEntry
      * Compares this sense with another sense in natural order.
      * The first difference in the following sequence determines the result:
      * <ol>
+     *   <li>Source definition ID, in ascending numeric order.</li>
      *   <li>Part of speech, in enum declaration order.</li>
      *   <li>Part-of-speech display label.</li>
      *   <li>Chinese translation text.</li>
@@ -114,7 +123,10 @@ public interface TranslationEntry
         Objects.requireNonNull(other, "other");
         if (this == other) return 0;
 
-        int result = pos().compareTo(other.pos());
+        int result = Integer.compare(id(), other.id());
+        if (result != 0) return result;
+
+        result = pos().compareTo(other.pos());
         if (result != 0) return result;
 
         result = partOfSpeechLabel().compareTo(other.partOfSpeechLabel());
