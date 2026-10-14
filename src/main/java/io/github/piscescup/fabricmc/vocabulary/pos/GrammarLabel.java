@@ -99,25 +99,6 @@ public record GrammarLabel(String code, String name) {
     }
 
     /**
-     * Returns the code normalized during construction, including removal of
-     * one enclosing pair of square brackets when present.
-     *
-     * @return the same code as {@link #code()}
-     */
-    public String getCode() {
-        return code;
-    }
-
-    /**
-     * Returns the human-readable name of this label.
-     *
-     * @return the same name as {@link #name()}
-     */
-    public String getName() {
-        return name;
-    }
-
-    /**
      * Returns the code enclosed in square brackets for dictionary-style display.
      *
      * @return the bracketed code, such as {@code "[C or U]"}

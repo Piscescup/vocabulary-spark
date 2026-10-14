@@ -70,5 +70,10 @@
   "gui.vocabulary-spark.detail_definitions": "释义",
   "gui.vocabulary-spark.detail_forms": "词形变化",
   "gui.vocabulary-spark.detail_no_definitions": "暂无释义。",
-  "gui.vocabulary-spark.detail_no_forms": "暂无词形变化。"
+  "gui.vocabulary-spark.detail_no_forms": "暂无词形变化。",
+  "gui.vocabulary-spark.pronunciation_play": "点击播放 %s 读音",
+  "gui.vocabulary-spark.pronunciation_loading": "正在加载 %s 读音…",
+  "gui.vocabulary-spark.pronunciation_playing": "正在播放 %s，点击重新播放",
+  "gui.vocabulary-spark.pronunciation_failed": "读音加载或播放失败，点击重试。",
+  "gui.vocabulary-spark.pronunciation_muted": "读音已静音，请检查主音量和界面音量。"
 }

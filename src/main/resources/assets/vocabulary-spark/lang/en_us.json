@@ -70,5 +70,10 @@
   "gui.vocabulary-spark.detail_definitions": "Meanings",
   "gui.vocabulary-spark.detail_forms": "Word forms",
   "gui.vocabulary-spark.detail_no_definitions": "No definitions available.",
-  "gui.vocabulary-spark.detail_no_forms": "No word forms available."
+  "gui.vocabulary-spark.detail_no_forms": "No word forms available.",
+  "gui.vocabulary-spark.pronunciation_play": "Click to play the %s pronunciation",
+  "gui.vocabulary-spark.pronunciation_loading": "Loading the %s pronunciation…",
+  "gui.vocabulary-spark.pronunciation_playing": "Playing %s; click to replay",
+  "gui.vocabulary-spark.pronunciation_failed": "Could not load or play this pronunciation. Click to retry.",
+  "gui.vocabulary-spark.pronunciation_muted": "Pronunciation is muted. Check Master and UI volume."
 }

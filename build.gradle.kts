@@ -4,6 +4,7 @@ plugins {
 }
 
 repositories {
+	mavenCentral()
 	maven("https://api.modrinth.com/maven") {
 		content { includeGroup("maven.modrinth") }
 	}
@@ -29,6 +30,9 @@ dependencies {
 	// Fabric API. This is technically optional, but you probably want it anyway.
 	implementation("net.fabricmc.fabric-api:fabric-api:${providers.gradleProperty("fabric_api_version").get()}")
 	implementation("maven.modrinth:tcdcommons:${providers.gradleProperty("tcdcommons_version").get()}")
+
+
+	include(implementation("javazoom:jlayer:1.0.1")!!)
 
 	testImplementation(platform("org.junit:junit-bom:5.11.4"))
 	testImplementation("org.junit.jupiter:junit-jupiter")

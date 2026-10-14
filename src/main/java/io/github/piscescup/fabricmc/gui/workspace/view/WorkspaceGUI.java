@@ -2,7 +2,7 @@ package io.github.piscescup.fabricmc.gui.workspace.view;
 
 import com.thecsdev.commonmc.api.client.gui.TElement;
 import com.thecsdev.commonmc.api.client.gui.render.TGuiGraphics;
-import io.github.piscescup.fabricmc.gui.widget.LabelWidget;
+import io.github.piscescup.fabricmc.gui.widget.Labels;
 import io.github.piscescup.fabricmc.gui.widget.WidgetTheme;
 import io.github.piscescup.fabricmc.gui.workspace.controller.VocabularyWorkspace;
 import io.github.piscescup.fabricmc.gui.workspace.controller.WordbookActions;
@@ -53,8 +53,7 @@ public final class WorkspaceGUI extends TElement {
         page.setBounds(bb.x + 1, bb.y + 40, bb.width - 2, Math.max(1, bb.height - 58));
         add(page);
 
-        new LabelWidget(workspace.status(), bb.x + 7, bb.endY - 17,
-            bb.width - 14, 16, WidgetTheme.MUTED
-        ).addTo(this);
+        add(Labels.label(workspace.status(), bb.x + 7, bb.endY - 17,
+            bb.width - 14, 16, WidgetTheme.MUTED));
     }
 }

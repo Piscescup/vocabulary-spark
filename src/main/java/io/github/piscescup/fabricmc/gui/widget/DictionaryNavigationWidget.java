@@ -1,7 +1,6 @@
 package io.github.piscescup.fabricmc.gui.widget;
 
 import com.thecsdev.common.util.enumerations.CompassDirection;
-import com.thecsdev.commonmc.api.client.gui.TElement;
 import com.thecsdev.commonmc.api.client.gui.render.TGuiGraphics;
 import com.thecsdev.commonmc.api.client.gui.tooltip.TTooltip;
 import com.thecsdev.commonmc.api.client.gui.widget.TButtonWidget;
@@ -23,11 +22,6 @@ public final class DictionaryNavigationWidget extends TButtonWidget.Transparent 
         setBounds(x, y, Math.max(1, width), Math.max(1, height));
         tooltipProperty().set(ignored -> TTooltip.of(label), DictionaryNavigationWidget.class);
         eClicked.addListener(ignored -> action.run());
-    }
-
-    public DictionaryNavigationWidget addTo(TElement parent) {
-        parent.add(this);
-        return this;
     }
 
     @Override

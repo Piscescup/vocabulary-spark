@@ -3,9 +3,8 @@ package io.github.piscescup.fabricmc.gui.workspace.view.tab;
 import com.thecsdev.commonmc.api.client.gui.misc.TTextureElement;
 import com.thecsdev.commonmc.api.client.gui.panel.TPanelElement;
 import io.github.piscescup.fabricmc.References;
-import io.github.piscescup.fabricmc.gui.widget.ButtonWidget;
-import io.github.piscescup.fabricmc.gui.widget.LabelWidget;
-import io.github.piscescup.fabricmc.gui.widget.ParagraphWidget;
+import io.github.piscescup.fabricmc.gui.widget.Buttons;
+import io.github.piscescup.fabricmc.gui.widget.Labels;
 import io.github.piscescup.fabricmc.gui.widget.ScrollPanelWidget;
 import io.github.piscescup.fabricmc.gui.workspace.controller.VocabularyWorkspace;
 import io.github.piscescup.fabricmc.gui.workspace.controller.WordbookActions;
@@ -29,13 +28,13 @@ public final class HomeTabGUI extends WorkspaceTabGUI {
         var bb = getBounds();
         if (bb.width >= 480) {
             int primaryWidth = (bb.width - 30) * 2 / 3;
-            new ScrollPanelWidget(bb.x + 10, bb.y + 10, primaryWidth, bb.height - 20, this::mainContent).addTo(this);
-            new ScrollPanelWidget(bb.x + 20 + primaryWidth, bb.y + 10,
+            add(new ScrollPanelWidget(bb.x + 10, bb.y + 10, primaryWidth, bb.height - 20, this::mainContent));
+            add(new ScrollPanelWidget(bb.x + 20 + primaryWidth, bb.y + 10,
                 bb.width - primaryWidth - 30, bb.height - 20, this::sideContent
-            ).addTo(this);
+            ));
         } else {
             // Small windows stack the sections instead of squeezing text into narrow columns.
-            new ScrollPanelWidget(bb.x + 6, bb.y + 6, bb.width - 12, bb.height - 12, outer -> {
+            add(new ScrollPanelWidget(bb.x + 6, bb.y + 6, bb.width - 12, bb.height - 12, outer -> {
                     var ob = outer.getBounds();
                     int bottom = mainContent(outer);
                     var side = new TPanelElement.Transparent() {
@@ -51,7 +50,7 @@ public final class HomeTabGUI extends WorkspaceTabGUI {
                     );
                     outer.add(side);
                 }
-            ).addTo(this);
+            ));
         }
     }
 
@@ -65,27 +64,29 @@ public final class HomeTabGUI extends WorkspaceTabGUI {
             .set(TTextureElement.Mode.TEXTURE, HomeTabGUI.class);
         icon.setBounds(x, y, 32, 32);
         panel.add(icon);
-        new LabelWidget(Component.literal(References.MOD_NAME), x + 40, y, width - 40, 17, ACCENT).addTo(panel);
-        new LabelWidget(Component.literal("v" + References.MOD_VERSION), x + 40, y + 18, width - 40, 14, MUTED).addTo(panel);
-        y = new ParagraphWidget(text("home_intro"), x, y + 44, width, MUTED).addTo(panel).getBounds().endY + 14;
+        panel.add(Labels.label(Component.literal(References.MOD_NAME), x + 40, y, width - 40, 17, ACCENT));
+        panel.add(Labels.label(Component.literal("v" + References.MOD_VERSION), x + 40, y + 18, width - 40, 14, MUTED));
+        var intro = Labels.paragraph(text("home_intro"), x, y + 44, width, MUTED);
+        panel.add(intro);
+        y = intro.getBounds().endY + 14;
 
-        new LabelWidget(text("quick_access"), x, y, width, 16, ACCENT).addTo(panel);
+        panel.add(Labels.label(text("quick_access"), x, y, width, 16, ACCENT));
         y += 21;
         int buttonWidth = (width - 10) / 2;
-        new ButtonWidget(text("import"), x, y, buttonWidth, 24, !workspace.busy(), actions::importBook).addTo(panel);
-        new ButtonWidget(text("wordbooks"), x + buttonWidth + 10, y, buttonWidth, 24, true,
+        panel.add(Buttons.button(text("import"), x, y, buttonWidth, 24, !workspace.busy(), actions::importBook));
+        panel.add(Buttons.button(text("wordbooks"), x + buttonWidth + 10, y, buttonWidth, 24, true,
             () -> workspace.open(WorkspaceTab.Page.WORDBOOKS)
-        ).addTo(panel);
+        ));
         y += 29;
-        new ButtonWidget(text("export"), x, y, buttonWidth, 24,
+        panel.add(Buttons.button(text("export"), x, y, buttonWidth, 24,
             !workspace.busy() && workspace.selectedBook()
                 .isPresent(), actions::exportSelected
-        ).addTo(panel);
-        new ButtonWidget(text("search"), x + buttonWidth + 10, y, buttonWidth, 24, true,
-            () -> workspace.open(WorkspaceTab.Page.SEARCH)).addTo(panel);
+        ));
+        panel.add(Buttons.button(text("search"), x + buttonWidth + 10, y, buttonWidth, 24, true,
+            () -> workspace.open(WorkspaceTab.Page.SEARCH)));
         y += 40;
 
-        new LabelWidget(text("overview"), x, y, width, 16, ACCENT).addTo(panel);
+        panel.add(Labels.label(text("overview"), x, y, width, 16, ACCENT));
         y += 21;
         y = stat(panel, text("book_count"), Component.literal(Integer.toString(workspace.books()
             .size())), x, y, width
@@ -105,7 +106,9 @@ public final class HomeTabGUI extends WorkspaceTabGUI {
         );
         if (workspace.books()
             .isEmpty()) {
-            y = new ParagraphWidget(text("empty_hint"), x, y + 10, width, MUTED).addTo(panel).getBounds().endY;
+            var emptyHint = Labels.paragraph(text("empty_hint"), x, y + 10, width, MUTED);
+            panel.add(emptyHint);
+            y = emptyHint.getBounds().endY;
         }
         return y;
     }
@@ -114,8 +117,9 @@ public final class HomeTabGUI extends WorkspaceTabGUI {
         var row = new com.thecsdev.commonmc.api.client.gui.misc.TFillColorElement.Flat(0x44000000, 0);
         row.setBounds(x, y, width, 22);
         panel.add(row);
-        new LabelWidget(name, x + 5, y, width / 2 - 5, 22, 0xFFFFFFFF).addTo(row);
-        var result = new LabelWidget(value, x + width / 2, y, width / 2 - 5, 22, 0xFFFFFFFF).addTo(row);
+        row.add(Labels.label(name, x + 5, y, width / 2 - 5, 22, 0xFFFFFFFF));
+        var result = Labels.label(value, x + width / 2, y, width / 2 - 5, 22, 0xFFFFFFFF);
+        row.add(result);
         result.textAlignmentProperty()
             .set(com.thecsdev.common.util.enumerations.CompassDirection.EAST, HomeTabGUI.class);
         return y + 26;
@@ -124,27 +128,31 @@ public final class HomeTabGUI extends WorkspaceTabGUI {
     private void sideContent(TPanelElement panel) {
         var bb = panel.getBounds();
         int x = bb.x + 10, y = bb.y + 10, width = bb.width - 20;
-        new LabelWidget(text("wordbooks"), x, y, width, 16, ACCENT).addTo(panel);
+        panel.add(Labels.label(text("wordbooks"), x, y, width, 16, ACCENT));
         y += 22;
         if (workspace.books()
             .isEmpty()) {
-            y = new ParagraphWidget(text("no_books"), x, y, width, MUTED).addTo(panel).getBounds().endY + 8;
-            new ButtonWidget(text("import_first"), x, y, width, 24, !workspace.busy(), actions::importBook).addTo(panel);
+            var noBooks = Labels.paragraph(text("no_books"), x, y, width, MUTED);
+            panel.add(noBooks);
+            y = noBooks.getBounds().endY + 8;
+            panel.add(Buttons.button(text("import_first"), x, y, width, 24, !workspace.busy(), actions::importBook));
             y += 36;
         } else {
             for (var book : workspace.books()) {
-                new ButtonWidget(text(
+                panel.add(Buttons.button(text(
                         "book_entry", book.name(), book.words()
                             .size()
                     ), x, y, width, 24,
                     true, () -> workspace.openBook(book)
-                ).addTo(panel);
+                ));
                 y += 29;
             }
             y += 10;
         }
-        new LabelWidget(text("getting_started"), x, y, width, 16, ACCENT).addTo(panel);
-        y = new ParagraphWidget(text("import_help"), x, y + 22, width, MUTED).addTo(panel).getBounds().endY + 12;
-        new ParagraphWidget(text("export_help"), x, y, width, MUTED).addTo(panel);
+        panel.add(Labels.label(text("getting_started"), x, y, width, 16, ACCENT));
+        var importHelp = Labels.paragraph(text("import_help"), x, y + 22, width, MUTED);
+        panel.add(importHelp);
+        y = importHelp.getBounds().endY + 12;
+        panel.add(Labels.paragraph(text("export_help"), x, y, width, MUTED));
     }
 }

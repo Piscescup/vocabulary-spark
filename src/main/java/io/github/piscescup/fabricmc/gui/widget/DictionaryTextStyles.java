@@ -24,17 +24,12 @@ public final class DictionaryTextStyles {
 
     private DictionaryTextStyles() {}
 
-    /** Search summaries use the original spelling, without inserting syllable separators. */
-    public static MutableComponent searchWordFormat(Component word) {
-        return word.copy().withStyle(style -> style.withColor(DICTIONARY_WORD_COLOR & 0xFFFFFF));
-    }
-
     public static MutableComponent partOfSpeechFormat(String label) {
         return Component.literal(label).withStyle(ChatFormatting.ITALIC, ChatFormatting.GRAY);
     }
 
-    /** The large accented dictionary headword. No syllabification or spelling conversion is applied. */
-    public static MutableComponent dictionaryHeadwordFormat(Component word) {
+    /** Applies the shared headword color to a copy, retaining its spelling and other styles. */
+    public static MutableComponent headwordFormat(Component word) {
         return word.copy().withStyle(style -> style.withColor(DICTIONARY_WORD_COLOR & 0xFFFFFF));
     }
 
@@ -46,10 +41,6 @@ public final class DictionaryTextStyles {
     public static MutableComponent dictionaryNavigationFormat(Component label, boolean selected) {
         return label.copy().withStyle(style -> style.withColor(
             (selected ? DICTIONARY_WORD_COLOR : DICTIONARY_MUTED_COLOR) & 0xFFFFFF));
-    }
-
-    public static MutableComponent dictionaryPartOfSpeechFormat(String label) {
-        return Component.literal(label).withStyle(ChatFormatting.BOLD, ChatFormatting.ITALIC, ChatFormatting.WHITE);
     }
 
     public static MutableComponent dictionaryPronunciationFormat(Component area, Component symbol) {

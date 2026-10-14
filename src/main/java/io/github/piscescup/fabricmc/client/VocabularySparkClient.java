@@ -2,6 +2,7 @@ package io.github.piscescup.fabricmc.client;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import io.github.piscescup.fabricmc.References;
+import io.github.piscescup.fabricmc.client.audio.PronunciationPlayer;
 import io.github.piscescup.fabricmc.gui.workspace.controller.VocabularyWorkspace;
 import io.github.piscescup.fabricmc.gui.workspace.controller.WordbookActions;
 import io.github.piscescup.fabricmc.gui.workspace.view.VocabularyScreen;
@@ -27,7 +28,7 @@ public final class VocabularySparkClient implements ClientModInitializer {
             .resolve(References.MOD_ID)
             .resolve("wordbooks"));
 
-        workspace = new VocabularyWorkspace(library, client::schedule);
+        workspace = new VocabularyWorkspace(library, client::schedule, new PronunciationPlayer(client));
         actions = new WordbookActions(client, workspace);
         workspace.load();
 
@@ -40,6 +41,7 @@ public final class VocabularySparkClient implements ClientModInitializer {
         );
 
         ClientTickEvents.END_CLIENT_TICK.register(minecraft -> {
+            workspace.pronunciationPlayer().tick();
             while (open.consumeClick()) {
                 if (minecraft.gui.screen() == null) openScreen(minecraft);
             }

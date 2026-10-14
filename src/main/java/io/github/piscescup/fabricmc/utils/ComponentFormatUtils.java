@@ -58,17 +58,6 @@ public final class ComponentFormatUtils {
     }
 
     /**
-     * Creates a category component without applying an explicit style.
-     *
-     * @param category the non-null learning-category text
-     * @return a new literal category component
-     */
-    @NonNull
-    public static MutableComponent categoryFormat(@NonNull String category) {
-        return Component.literal(category);
-    }
-
-    /**
      * Formats an English example and its Chinese translation together.
      * English text is italic and gray; Chinese text is gray. A newline is
      * inserted between them only when both strings are non-empty.
@@ -129,7 +118,7 @@ public final class ComponentFormatUtils {
         @NonNull String symbol,
         ChatFormatting... styles
     ) {
-        return Component.literal(symbol).withStyle(ChatFormatting.BOLD, ChatFormatting.BLACK)
+        return Component.literal(symbol).withStyle(ChatFormatting.BOLD, ChatFormatting.BLACK, ChatFormatting.UNDERLINE)
             .withStyle(styles);
     }
 }

@@ -1,6 +1,7 @@
 package io.github.piscescup.fabricmc.gui.workspace.controller;
 
 import io.github.piscescup.fabricmc.References;
+import io.github.piscescup.fabricmc.client.audio.PronunciationPlayer;
 import io.github.piscescup.fabricmc.dictionary.DictionaryClient;
 import io.github.piscescup.fabricmc.wordbook.Wordbook;
 import io.github.piscescup.fabricmc.wordbook.WordbookFiles;
@@ -29,6 +30,7 @@ public final class VocabularyWorkspace implements AutoCloseable {
     private final WordbookLibrary library;
     private final Executor clientExecutor;
     private final DictionarySearch dictionarySearch;
+    private final PronunciationPlayer pronunciationPlayer;
     private final ExecutorService io = Executors.newSingleThreadExecutor(runnable -> {
         Thread thread = new Thread(runnable, "Vocabulary Spark wordbooks");
         thread.setDaemon(true);
@@ -45,9 +47,10 @@ public final class VocabularyWorkspace implements AutoCloseable {
     private Consumer<Throwable> errorHandler = failure -> {
     };
 
-    public VocabularyWorkspace(WordbookLibrary library, Executor clientExecutor) {
+    public VocabularyWorkspace(WordbookLibrary library, Executor clientExecutor, PronunciationPlayer pronunciationPlayer) {
         this.library = library;
         this.clientExecutor = clientExecutor;
+        this.pronunciationPlayer = pronunciationPlayer;
         this.dictionarySearch = new DictionarySearch(
             new DictionaryClient(library.directory().getParent().resolve("dictionary.json")), clientExecutor
         );
@@ -55,6 +58,10 @@ public final class VocabularyWorkspace implements AutoCloseable {
 
     public DictionarySearch dictionarySearch() {
         return dictionarySearch;
+    }
+
+    public PronunciationPlayer pronunciationPlayer() {
+        return pronunciationPlayer;
     }
 
     public WordbookLibrary library() {
@@ -226,6 +233,7 @@ public final class VocabularyWorkspace implements AutoCloseable {
     }
 
     public void close() {
+        pronunciationPlayer.close();
         dictionarySearch.close();
         io.shutdown();
     }

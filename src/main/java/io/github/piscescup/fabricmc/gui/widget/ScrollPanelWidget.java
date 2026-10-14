@@ -25,11 +25,6 @@ public final class ScrollPanelWidget extends TElement {
 
     public TPanelElement.Paintable getPanel() { return panel; }
 
-    public ScrollPanelWidget addTo(TElement parent) {
-        parent.add(this);
-        return this;
-    }
-
     @Override
     protected void initCallback() {
         var bb = getBounds();

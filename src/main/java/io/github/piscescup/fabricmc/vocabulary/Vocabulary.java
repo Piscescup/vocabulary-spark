@@ -177,6 +177,6 @@ public record Vocabulary(
      */
     @Override
     public List<MutableComponent> categories() {
-        return rawCategories.stream().map(ComponentFormatUtils::categoryFormat).toList();
+        return rawCategories.stream().map(Component::literal).toList();
     }
 }

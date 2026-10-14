@@ -1,0 +1,12 @@
+This mod includes the unmodified JLayer 1.0.1 library (javazoom:jlayer:1.0.1).
+JLayer is distributed under the GNU Library General Public License, version 2
+or (at your option) any later version. Its license is included in
+jlayer-LGPL-2.0.txt in this directory.
+
+Original project: JavaZOOM JLayer
+Project website: http://www.javazoom.net/javalayer/javalayer.html
+Exact library sources:
+https://repo.maven.apache.org/maven2/javazoom/jlayer/1.0.1/jlayer-1.0.1-sources.jar
+
+The library is included as a separate nested JAR by Fabric Loom, without
+modifications. The Vocabulary Spark license does not replace JLayer's license.

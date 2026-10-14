@@ -2,11 +2,10 @@ package io.github.piscescup.fabricmc.gui.workspace.view.tab;
 
 import com.thecsdev.commonmc.api.client.gui.panel.TPanelElement;
 import com.thecsdev.commonmc.api.client.gui.util.TInputContext;
-import io.github.piscescup.fabricmc.gui.widget.TextFieldWidget;
-import io.github.piscescup.fabricmc.gui.widget.ButtonWidget;
-import io.github.piscescup.fabricmc.gui.widget.LabelWidget;
-import io.github.piscescup.fabricmc.gui.widget.ParagraphWidget;
+import io.github.piscescup.fabricmc.gui.widget.Buttons;
+import io.github.piscescup.fabricmc.gui.widget.Labels;
 import io.github.piscescup.fabricmc.gui.widget.ScrollPanelWidget;
+import io.github.piscescup.fabricmc.gui.widget.TextFieldWidget;
 import io.github.piscescup.fabricmc.gui.widget.VocabularyEntryElement;
 import io.github.piscescup.fabricmc.gui.workspace.controller.DictionarySearch;
 import io.github.piscescup.fabricmc.gui.workspace.controller.VocabularyWorkspace;
@@ -35,7 +34,7 @@ public final class SearchTabGUI extends WorkspaceTabGUI {
     protected void initCallback() {
         revision = search.revision();
         var bb = getBounds();
-        new LabelWidget(text("search"), bb.x + 10, bb.y + 8, bb.width - 20, 20, ACCENT).addTo(this);
+        add(Labels.label(text("search"), bb.x + 10, bb.y + 8, bb.width - 20, 20, ACCENT));
 
         input = new TextFieldWidget();
         input.placeholderProperty().set(text("search_placeholder"), SearchTabGUI.class);
@@ -43,10 +42,12 @@ public final class SearchTabGUI extends WorkspaceTabGUI {
         input.textProperty().addChangeListener((property, oldValue, newValue) -> search.setInput(newValue));
         input.setBounds(bb.x + 10, bb.y + 35, Math.max(1, bb.width - 100), 22);
         add(input);
-        new ButtonWidget(text("search_submit"), bb.endX - 80, bb.y + 35, 70, 22, true, search::submit).addTo(this);
+        add(Buttons.button(text("search_submit"), bb.endX - 80, bb.y + 35, 70, 22, true, search::submit));
 
-        results = new ScrollPanelWidget(bb.x + 10, bb.y + 65, bb.width - 20,
-            Math.max(1, bb.height - 75), this::populateResults).addTo(this).getPanel();
+        var resultPanel = new ScrollPanelWidget(bb.x + 10, bb.y + 65, bb.width - 20,
+            Math.max(1, bb.height - 75), this::populateResults);
+        add(resultPanel);
+        results = resultPanel.getPanel();
     }
 
     @Override
@@ -77,16 +78,18 @@ public final class SearchTabGUI extends WorkspaceTabGUI {
         int x = bb.x + 10, y = bb.y + 10, width = bb.width - 20;
         int color = search.state() == DictionarySearch.State.FAILED
             || search.state() == DictionarySearch.State.INVALID_INPUT ? 0xFFFF9999 : MUTED;
-        y = new ParagraphWidget(search.message(), x, y, width, color).addTo(panel).getBounds().endY + 12;
+        var messageLabel = Labels.paragraph(search.message(), x, y, width, color);
+        panel.add(messageLabel);
+        y = messageLabel.getBounds().endY + 12;
         var vocabulary = search.result().orElse(null);
         if (vocabulary == null) return;
 
         int wordWidth = VocabularyEntryElement.wordWidth(width);
         int posWidth = VocabularyEntryElement.posWidth(width);
-        new LabelWidget(text("search_word"), x + 8, y, wordWidth - 12, 18, ACCENT).addTo(panel);
-        new LabelWidget(text("search_pos"), x + wordWidth, y, posWidth - 8, 18, ACCENT).addTo(panel);
-        new LabelWidget(text("search_translation"), x + wordWidth + posWidth, y,
-            width - wordWidth - posWidth - 8, 18, ACCENT).addTo(panel);
+        panel.add(Labels.label(text("search_word"), x + 8, y, wordWidth - 12, 18, ACCENT));
+        panel.add(Labels.label(text("search_pos"), x + wordWidth, y, posWidth - 8, 18, ACCENT));
+        panel.add(Labels.label(text("search_translation"), x + wordWidth + posWidth, y,
+            width - wordWidth - posWidth - 8, 18, ACCENT));
         y += 23;
         var summary = vocabulary.translations().stream()
             .filter(sense -> !sense.translation().getString().isBlank() || !sense.englishDefinition().getString().isBlank())
@@ -95,7 +98,7 @@ public final class SearchTabGUI extends WorkspaceTabGUI {
         var row = new VocabularyEntryElement(vocabulary, summary, () -> {
             var client = getClient();
             if (client == null) return;
-            var detail = new VocabularyDetailScreen(client.gui.screen(), vocabulary);
+            var detail = new VocabularyDetailScreen(client.gui.screen(), vocabulary, workspace.pronunciationPlayer());
             client.gui.setScreen(detail.getAsScreen());
         });
         row.setBoundsToFitContent(x, y, width);

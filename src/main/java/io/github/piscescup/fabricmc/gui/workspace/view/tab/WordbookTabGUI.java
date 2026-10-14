@@ -1,13 +1,13 @@
 package io.github.piscescup.fabricmc.gui.workspace.view.tab;
 
 import com.thecsdev.common.math.Point2d;
+import com.thecsdev.commonmc.api.client.gui.label.TLabelElement;
 import com.thecsdev.commonmc.api.client.gui.panel.TPanelElement;
 import com.thecsdev.commonmc.api.client.gui.widget.TButtonWidget;
-import io.github.piscescup.fabricmc.gui.widget.TextFieldWidget;
-import io.github.piscescup.fabricmc.gui.widget.ButtonWidget;
-import io.github.piscescup.fabricmc.gui.widget.LabelWidget;
-import io.github.piscescup.fabricmc.gui.widget.ParagraphWidget;
+import io.github.piscescup.fabricmc.gui.widget.Buttons;
+import io.github.piscescup.fabricmc.gui.widget.Labels;
 import io.github.piscescup.fabricmc.gui.widget.ScrollPanelWidget;
+import io.github.piscescup.fabricmc.gui.widget.TextFieldWidget;
 import io.github.piscescup.fabricmc.gui.workspace.controller.VocabularyWorkspace;
 import io.github.piscescup.fabricmc.gui.workspace.controller.WordbookActions;
 import io.github.piscescup.fabricmc.gui.workspace.controller.WorkspaceTab;
@@ -28,7 +28,7 @@ public final class WordbookTabGUI extends WorkspaceTabGUI {
     private List<String> matches = List.of();
     private int page;
     private TPanelElement list;
-    private LabelWidget pageLabel;
+    private TLabelElement pageLabel;
     private TButtonWidget previous, next;
 
     public WordbookTabGUI(VocabularyWorkspace workspace, WordbookActions actions, WorkspaceTab.Book tab) {
@@ -42,10 +42,10 @@ public final class WordbookTabGUI extends WorkspaceTabGUI {
             .orElseThrow();
         allWords = book.words();
         var bb = getBounds();
-        new LabelWidget(Component.literal(book.name()), bb.x + 10, bb.y + 8, bb.width - 120, 20, ACCENT).addTo(this);
-        new ButtonWidget(text("export"), bb.endX - 105, bb.y + 8, 95, 22, !workspace.busy(),
+        add(Labels.label(Component.literal(book.name()), bb.x + 10, bb.y + 8, bb.width - 120, 20, ACCENT));
+        add(Buttons.button(text("export"), bb.endX - 105, bb.y + 8, 95, 22, !workspace.busy(),
             () -> actions.exportBook(book)
-        ).addTo(this);
+        ));
 
         var search = new TextFieldWidget();
         search.placeholderProperty()
@@ -55,23 +55,28 @@ public final class WordbookTabGUI extends WorkspaceTabGUI {
         search.setBounds(bb.x + 10, bb.y + 37, bb.width - 20, 22);
         add(search);
 
-        list = new ScrollPanelWidget(bb.x + 10, bb.y + 67, bb.width - 20, Math.max(1, bb.height - 104), panel -> {
+        var wordPanel = new ScrollPanelWidget(bb.x + 10, bb.y + 67, bb.width - 20, Math.max(1, bb.height - 104), panel -> {
                 var pb = panel.getBounds();
                 int y = pb.y + 10;
                 if (matches.isEmpty()) {
-                    new ParagraphWidget(text("no_matching_words"), pb.x + 10, y, pb.width - 20, MUTED).addTo(panel);
+                    panel.add(Labels.paragraph(text("no_matching_words"), pb.x + 10, y, pb.width - 20, MUTED));
                 }
                 int start = page * PAGE_SIZE, end = Math.min(matches.size(), start + PAGE_SIZE);
                 for (int index = start; index < end; index++) {
-                    new LabelWidget(Component.literal(Integer.toString(index + 1)), pb.x + 10, y, 35, 20, MUTED).addTo(panel);
-                    new LabelWidget(Component.literal(matches.get(index)), pb.x + 50, y, pb.width - 60, 20, 0xFFFFFFFF).addTo(panel);
+                    panel.add(Labels.label(Component.literal(Integer.toString(index + 1)), pb.x + 10, y, 35, 20, MUTED));
+                    panel.add(Labels.label(Component.literal(matches.get(index)), pb.x + 50, y, pb.width - 60, 20, 0xFFFFFFFF));
                     y += 24;
                 }
             }
-        ).addTo(this).getPanel();
-        previous = new ButtonWidget(Component.literal("<"), bb.x + 10, bb.endY - 29, 28, 22, true, () -> changePage(-1)).addTo(this);
-        next = new ButtonWidget(Component.literal(">"), bb.endX - 38, bb.endY - 29, 28, 22, true, () -> changePage(1)).addTo(this);
-        pageLabel = new LabelWidget(Component.empty(), bb.x + 44, bb.endY - 29, bb.width - 88, 22, MUTED).addTo(this);
+        );
+        add(wordPanel);
+        list = wordPanel.getPanel();
+        previous = Buttons.button(Component.literal("<"), bb.x + 10, bb.endY - 29, 28, 22, true, () -> changePage(-1));
+        add(previous);
+        next = Buttons.button(Component.literal(">"), bb.endX - 38, bb.endY - 29, 28, 22, true, () -> changePage(1));
+        add(next);
+        pageLabel = Labels.label(Component.empty(), bb.x + 44, bb.endY - 29, bb.width - 88, 22, MUTED);
+        add(pageLabel);
         pageLabel.textAlignmentProperty()
             .set(com.thecsdev.common.util.enumerations.CompassDirection.CENTER, WordbookTabGUI.class);
 

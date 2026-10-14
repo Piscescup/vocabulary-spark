@@ -4,8 +4,8 @@ import com.thecsdev.common.math.UDim2;
 import com.thecsdev.commonmc.api.client.gui.TElement;
 import com.thecsdev.commonmc.api.client.gui.panel.window.TWindowElement;
 import com.thecsdev.commonmc.api.client.gui.screen.promise.TCompletableScreen;
-import io.github.piscescup.fabricmc.gui.widget.ButtonWidget;
-import io.github.piscescup.fabricmc.gui.widget.ParagraphWidget;
+import io.github.piscescup.fabricmc.gui.widget.Buttons;
+import io.github.piscescup.fabricmc.gui.widget.Labels;
 import io.github.piscescup.fabricmc.gui.widget.ScrollPanelWidget;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -30,21 +30,20 @@ public final class ConfirmScreen extends TCompletableScreen<Boolean> {
             @Override
             protected void initBodyCallback(TElement body) {
                 var bounds = body.getBounds();
-                new ScrollPanelWidget(bounds.x + 10, bounds.y + 8,
+                body.add(new ScrollPanelWidget(bounds.x + 10, bounds.y + 8,
                     bounds.width - 20, bounds.height - 43, panel -> {
                         var bb = panel.getBounds();
-                        new ParagraphWidget(message, bb.x + 10, bb.y + 10,
-                            bb.width - 20, 0xFFFFFFFF
-                        ).addTo(panel);
+                        panel.add(Labels.paragraph(message, bb.x + 10, bb.y + 10,
+                            bb.width - 20, 0xFFFFFFFF));
                     }
-                ).addTo(body);
+                ));
                 int width = (bounds.width - 30) / 2;
-                new ButtonWidget(text("replace"), bounds.x + 10, bounds.endY - 26,
+                body.add(Buttons.button(text("replace"), bounds.x + 10, bounds.endY - 26,
                     width, 20, true, () -> resolve(true)
-                ).addTo(body);
-                new ButtonWidget(text("cancel"), bounds.x + 20 + width, bounds.endY - 26,
+                ));
+                body.add(Buttons.button(text("cancel"), bounds.x + 20 + width, bounds.endY - 26,
                     width, 20, true, () -> resolve(false)
-                ).addTo(body);
+                ));
             }
         };
         window.titleProperty()

@@ -24,7 +24,19 @@ focus it and press Enter) to open an independent dictionary-detail GUI.
 
 The compact detail page uses a translucent background, small text, blue accents,
 and a sidebar of bordered navigation buttons. Pronunciations appear together
-below the headword; identical region/transcription pairs are displayed once.
+below the headword; identical region/transcription/audio-URL combinations are
+displayed once. Click a regional label or phonetic transcription to play that
+pronunciation. Hover for loading, playback, retry or muted-state information.
+Audio uses Minecraft's Master and UI volume settings. Selecting another
+pronunciation stops the previous clip; leaving the detail screen stops playback
+and prevents an earlier download from starting afterward.
+
+Pronunciation MP3 files are downloaded and decoded asynchronously. Decoded clips
+are cached for the game session (up to 32 clips and 16 MiB), and failed downloads
+can be retried. Playback uses Fabric's existing custom audio-stream API; the
+bundled JLayer 1.0.1 dependency supplies MP3 decoding. No external player or
+separately installed codec is required.
+
 Each part of speech has its own tab labeled with `PartOfSpeech.getName()`.
 `VocabularyTranslationEntry` stores the numeric definition `id`, exposed through
 `TranslationEntry.id()`. Its natural ordering compares IDs first and uses the
@@ -116,7 +128,8 @@ Better Statistics itself is not a runtime dependency and its assets are not bund
 - `wordbook/`: portable wordbook model, JSON/TXT codec and local library.
 - `dictionary/`: asynchronous HTTP queries and bounded in-memory word cache.
 - `gui/widget/`: reusable controls, clickable word summaries and dictionary-detail
-  components (navigation, POS badge, bilingual senses and page layout).
+  components (navigation, pronunciation controls, bilingual senses and page layout).
+- `client/audio/`: MP3 decoding, bounded pronunciation cache and game sound playback.
 - `gui/workspace/controller/`: workspace state, tabs, search state and file actions.
 - `gui/workspace/view/`: root GUI and tab-view factory.
 - `view/editor/`, `view/menubar/`, `view/tab/`, `view/dialog/`: menu strip,
@@ -126,10 +139,13 @@ Views use TCDCommons `TScreenPlus`, `TElement`, panels, labels, buttons, scrollb
 context menus, file chooser and promise dialogs. Minecraft screen references
 only bridge to the engine; no vanilla widgets, file dialogs or GUI render
 utilities are used in the workspace. File I/O runs on a dedicated worker, with
-state changes scheduled back to the client thread. Reusable controls are actual
-components under `gui.widget`, rather than static GUI factory methods.
+state changes scheduled back to the client thread. `Labels` and `Buttons` create
+configured native TCDCommons elements; controls with additional behavior remain
+components under `gui.widget`.
 
-Run `gradlew.bat test build` to verify the file workflows and build the mod.
+Run `gradlew.bat test build` to verify file workflows, audio decoding and download
+behavior, and build the mod. Audio download tests use a temporary local HTTP
+server and generated silent MP3 frames, without contacting the dictionary service.
 
 ## Dictionary JSON
 
@@ -188,3 +204,6 @@ For setup instructions, please see the [Fabric Documentation page](https://docs.
 ## License
 
 This template is available under the CC0 license. Feel free to learn from it and incorporate it in your own projects.
+
+The bundled JLayer 1.0.1 library is licensed under LGPL-2.0-or-later. Its license
+and source-download notice are included under `META-INF/licenses/` in the mod.

@@ -4,15 +4,16 @@ import com.thecsdev.commonmc.api.client.gui.TElement;
 import com.thecsdev.commonmc.api.client.gui.misc.TFillColorElement;
 import com.thecsdev.commonmc.api.client.gui.panel.TPanelElement;
 import com.thecsdev.commonmc.api.client.gui.render.TGuiGraphics;
+import io.github.piscescup.fabricmc.client.audio.PronunciationPlayer;
 import io.github.piscescup.fabricmc.vocabulary.Word;
+import io.github.piscescup.fabricmc.vocabulary.pronunciation.Pronunciation;
 import io.github.piscescup.fabricmc.vocabulary.translation.TranslationEntry;
-import net.minecraft.network.chat.Component;
-
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import net.minecraft.network.chat.Component;
 
 import static io.github.piscescup.fabricmc.gui.widget.DictionaryTextStyles.*;
 import static io.github.piscescup.fabricmc.utils.ComponentUtils.text;
@@ -21,13 +22,15 @@ import static io.github.piscescup.fabricmc.utils.ComponentUtils.text;
 public final class VocabularyDetailWidget extends TElement {
     private final Word vocabulary;
     private final Runnable back;
+    private final PronunciationPlayer pronunciationPlayer;
     private final Map<String, List<TranslationEntry>> senses = new LinkedHashMap<>();
     private String selectedPos;
     private boolean showForms;
 
-    public VocabularyDetailWidget(Word vocabulary, Runnable back) {
+    public VocabularyDetailWidget(Word vocabulary, Runnable back, PronunciationPlayer pronunciationPlayer) {
         this.vocabulary = Objects.requireNonNull(vocabulary);
         this.back = Objects.requireNonNull(back);
+        this.pronunciationPlayer = Objects.requireNonNull(pronunciationPlayer);
         for (var sense : vocabulary.translations()) {
             if (sense.englishDefinition().getString().isBlank() && sense.translation().getString().isBlank()) continue;
             String pos = sense.pos().getName();
@@ -40,19 +43,20 @@ public final class VocabularyDetailWidget extends TElement {
     protected void initCallback() {
         var bb = getBounds();
         int sidebar = bb.width >= 360 ? 86 : 0;
-        new DictionaryNavigationWidget(text("detail_back"), bb.x + 6, bb.y + 3, 90, 19,
-            true, false, back).addTo(this);
-        var title = new LabelWidget(dictionaryHeadingFormat(text("detail_title")), bb.x + 103, bb.y + 3,
-            bb.width - 111, 19, DICTIONARY_WORD_COLOR).withoutShadow().addTo(this);
-        title.getLabel().textScaleProperty().set(DICTIONARY_BODY_SCALE, VocabularyDetailWidget.class);
+        add(new DictionaryNavigationWidget(text("detail_back"), bb.x + 6, bb.y + 3, 90, 19,
+            true, false, back));
+        var title = Labels.label(dictionaryHeadingFormat(text("detail_title")), bb.x + 103, bb.y + 3,
+            bb.width - 111, 19, DICTIONARY_WORD_COLOR, false);
+        add(title);
+        title.textScaleProperty().set(DICTIONARY_BODY_SCALE, VocabularyDetailWidget.class);
 
         if (sidebar > 0) {
-            new ParagraphWidget(dictionaryHeadingFormat(text("detail_contents")), bb.x + 8, bb.y + 34,
-                sidebar - 16, DICTIONARY_WORD_COLOR, DICTIONARY_BODY_SCALE).withoutShadow().addTo(this);
-            new DictionaryButtonWidget(text("detail_definitions"), bb.x + 6, bb.y + 51,
-                sidebar - 12, 20, !showForms, () -> selectSection(false)).addTo(this);
-            new DictionaryButtonWidget(text("detail_forms"), bb.x + 6, bb.y + 75,
-                sidebar - 12, 20, showForms, () -> selectSection(true)).addTo(this);
+            add(Labels.paragraph(dictionaryHeadingFormat(text("detail_contents")), bb.x + 8, bb.y + 34,
+                sidebar - 16, DICTIONARY_WORD_COLOR, DICTIONARY_BODY_SCALE, false));
+            add(Buttons.dictionaryButton(text("detail_definitions"), bb.x + 6, bb.y + 51,
+                sidebar - 12, 20, !showForms, () -> selectSection(false)));
+            add(Buttons.dictionaryButton(text("detail_forms"), bb.x + 6, bb.y + 75,
+                sidebar - 12, 20, showForms, () -> selectSection(true)));
         }
 
         var content = new ScrollPanelWidget(bb.x + sidebar + 5, bb.y + 29,
@@ -61,7 +65,7 @@ public final class VocabularyDetailWidget extends TElement {
         content.getPanel().backgroundColorProperty().set(0, VocabularyDetailWidget.class);
         content.getPanel().outlineColorProperty().set(0, VocabularyDetailWidget.class);
         content.getPanel().focusedOutlineColorProperty().set(0, VocabularyDetailWidget.class);
-        content.addTo(this);
+        add(content);
     }
 
     private void populateContent(TPanelElement panel, boolean compact) {
@@ -69,31 +73,39 @@ public final class VocabularyDetailWidget extends TElement {
         int x = bb.x + 8, y = bb.y + 8, width = Math.max(1, bb.width - 16);
         if (compact) {
             int buttonWidth = Math.min(76, Math.max(1, (width - 5) / 2));
-            new DictionaryButtonWidget(text("detail_definitions"), x, y, buttonWidth, 19,
-                !showForms, () -> selectSection(false)).addTo(panel);
-            new DictionaryButtonWidget(text("detail_forms"), x + buttonWidth + 5, y, buttonWidth, 19,
-                showForms, () -> selectSection(true)).addTo(panel);
+            panel.add(Buttons.dictionaryButton(text("detail_definitions"), x, y, buttonWidth, 19,
+                !showForms, () -> selectSection(false)));
+            panel.add(Buttons.dictionaryButton(text("detail_forms"), x + buttonWidth + 5, y, buttonWidth, 19,
+                showForms, () -> selectSection(true)));
             y += 25;
         }
 
-        var headword = new ParagraphWidget(dictionaryHeadwordFormat(vocabulary.word()),
-            x, y, width, DICTIONARY_WORD_COLOR, DICTIONARY_HEADWORD_SCALE).withoutShadow().addTo(panel);
+        var headword = Labels.paragraph(headwordFormat(vocabulary.word()),
+            x, y, width, DICTIONARY_WORD_COLOR, DICTIONARY_HEADWORD_SCALE, false);
+        panel.add(headword);
         y = headword.getBounds().endY + 5;
-        var pronunciations = new LinkedHashMap<PronunciationKey, Component>();
+        var pronunciations = new LinkedHashMap<PronunciationKey, Pronunciation>();
         for (var pronunciation : vocabulary.pronunciations()) {
             var area = pronunciation.area();
             var symbol = pronunciation.phoneticSymbol();
-            pronunciations.putIfAbsent(new PronunciationKey(area.getString(), symbol.getString()),
-                dictionaryPronunciationFormat(area, symbol));
+            pronunciations.putIfAbsent(new PronunciationKey(area.getString(), symbol.getString(),
+                pronunciation.pronunciationUrl().toExternalForm()), pronunciation);
         }
         if (!pronunciations.isEmpty()) {
-            var row = Component.empty();
+            int pronunciationX = x, pronunciationY = y, bottom = y;
             for (var pronunciation : pronunciations.values()) {
-                if (!row.getString().isEmpty()) row.append("    ");
-                row.append(pronunciation);
+                var button = new PronunciationWidget(pronunciation, pronunciationPlayer);
+                button.setBoundsToFitContent(pronunciationX, pronunciationY, width);
+                if (pronunciationX > x && button.getBounds().endX > x + width) {
+                    pronunciationX = x;
+                    pronunciationY = bottom + 3;
+                    button.setBoundsToFitContent(pronunciationX, pronunciationY, width);
+                }
+                panel.add(button);
+                bottom = Math.max(bottom, button.getBounds().endY);
+                pronunciationX = button.getBounds().endX + 8;
             }
-            y = new ParagraphWidget(row, x, y, width, DICTIONARY_TEXT_COLOR, DICTIONARY_PRONUNCIATION_SCALE)
-                .withoutShadow().addTo(panel).getBounds().endY + 6;
+            y = bottom + 6;
         }
         var categories = vocabulary.categories();
         if (!categories.isEmpty()) {
@@ -102,8 +114,10 @@ public final class VocabularyDetailWidget extends TElement {
                 if (!categoryText.getString().isEmpty()) categoryText.append(" / ");
                 categoryText.append(category.copy());
             }
-            y = new ParagraphWidget(dictionaryNavigationFormat(categoryText, false), x, y, width,
-                DICTIONARY_MUTED_COLOR, DICTIONARY_BODY_SCALE).withoutShadow().addTo(panel).getBounds().endY + 6;
+            var categoryLabel = Labels.paragraph(dictionaryNavigationFormat(categoryText, false), x, y, width,
+                DICTIONARY_MUTED_COLOR, DICTIONARY_BODY_SCALE, false);
+            panel.add(categoryLabel);
+            y = categoryLabel.getBounds().endY + 6;
         }
 
         if (showForms) {
@@ -129,8 +143,8 @@ public final class VocabularyDetailWidget extends TElement {
         panel.add(divider);
         y = tabY + 27;
         if (selectedPos == null) {
-            new ParagraphWidget(dictionaryNavigationFormat(text("detail_no_definitions"), false),
-                x, y, width, DICTIONARY_MUTED_COLOR, DICTIONARY_BODY_SCALE).withoutShadow().addTo(panel);
+            panel.add(Labels.paragraph(dictionaryNavigationFormat(text("detail_no_definitions"), false),
+                x, y, width, DICTIONARY_MUTED_COLOR, DICTIONARY_BODY_SCALE, false));
             return;
         }
         List<TranslationEntry> selected = senses.get(selectedPos);
@@ -150,21 +164,25 @@ public final class VocabularyDetailWidget extends TElement {
     }
 
     private void populateForms(TPanelElement panel, int x, int y, int width) {
-        y = new ParagraphWidget(dictionaryHeadingFormat(text("detail_forms")), x, y, width,
-            DICTIONARY_WORD_COLOR, DICTIONARY_BODY_SCALE).withoutShadow().addTo(panel).getBounds().endY + 8;
+        var heading = Labels.paragraph(dictionaryHeadingFormat(text("detail_forms")), x, y, width,
+            DICTIONARY_WORD_COLOR, DICTIONARY_BODY_SCALE, false);
+        panel.add(heading);
+        y = heading.getBounds().endY + 8;
         var forms = vocabulary.forms();
         if (forms.isEmpty()) {
-            new ParagraphWidget(text("detail_no_forms"), x, y, width, DICTIONARY_MUTED_COLOR,
-                DICTIONARY_BODY_SCALE).withoutShadow().addTo(panel);
+            panel.add(Labels.paragraph(text("detail_no_forms"), x, y, width, DICTIONARY_MUTED_COLOR,
+                DICTIONARY_BODY_SCALE, false));
             return;
         }
         for (var form : forms.entrySet()) {
-            y = new ParagraphWidget(dictionaryFormFormat(form.getKey().getForm(), form.getValue()), x, y,
-                width, DICTIONARY_TEXT_COLOR, DICTIONARY_BODY_SCALE).withoutShadow().addTo(panel).getBounds().endY + 6;
+            var formLabel = Labels.paragraph(dictionaryFormFormat(form.getKey().getForm(), form.getValue()), x, y,
+                width, DICTIONARY_TEXT_COLOR, DICTIONARY_BODY_SCALE, false);
+            panel.add(formLabel);
+            y = formLabel.getBounds().endY + 6;
         }
     }
 
-    private record PronunciationKey(String area, String symbol) {}
+    private record PronunciationKey(String area, String symbol, String audioUrl) {}
 
     private void selectSection(boolean forms) {
         showForms = forms;
