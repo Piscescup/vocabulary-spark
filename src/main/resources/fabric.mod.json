@@ -16,13 +16,13 @@
 	"environment": "*",
 	"entrypoints": {
 		"main": [
-			"io.github.piscescup.fabricmc.VocabularySpark"
+			"io.github.piscescup.vocabularyspark.VocabularySpark"
 		],
 		"client": [
-			"io.github.piscescup.fabricmc.client.VocabularySparkClient"
+			"io.github.piscescup.vocabularyspark.client.VocabularySparkClient"
 		],
 		"fabric-datagen": [
-			"io.github.piscescup.fabricmc.VocabularySparkDataGenerator"
+			"io.github.piscescup.vocabularyspark.VocabularySparkDataGenerator"
 		]
 	},
 	"mixins": [

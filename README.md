@@ -15,6 +15,17 @@ filtering and pagination. The home tab stays available. Online dictionary
 search is available from Home or View → Search. Daily study plans and spaced
 repetition are not implemented yet.
 
+Five Qwerty Learner word lists (CET4, CET6, postgraduate English, IELTS and TOEFL)
+are bundled with the mod and appear automatically in the library. Their word
+lists are available offline; online dictionary lookup still needs a connection.
+
+Click a word or phrase inside any wordbook to look it up. The status line shows
+loading, not-found or error information; a successful lookup opens the existing
+dictionary-detail screen automatically. Back/Escape returns to the original
+wordbook with its filter and page preserved. Queries reuse the search page's
+dictionary client and cache. Only the latest request can open details, and a
+completed request does not reopen the book after you leave it or close the workspace.
+
 ### Dictionary search
 
 Use **View → Search** (or the home page Search button), enter an English word or
@@ -50,7 +61,7 @@ All examples returned by the display API are shown directly, left-aligned.
 Text shadows are disabled through TCDCommons. The Word forms sidebar button
 is always available and displays an empty-state message when no forms are supplied.
 Narrow windows put the navigation
-above the content. Back/Escape returns to the search workspace.
+above the content. Back/Escape returns to the originating search or wordbook page.
 
 Search and wordbook-filter fields support Ctrl+A/C/X/V, selection replacement,
 arrow/Home/End movement, Shift selection, and mouse selection. They are implemented
@@ -87,7 +98,8 @@ appended to it. It must return the existing `Vocabulary` JSON format.
 ### Import and export
 
 - **File → Import wordbook** opens TCDCommons' in-game file chooser.
-- Import UTF-8 JSON (schema below), or TXT with one word/phrase per line.
+- Import UTF-8 JSON (schema below), Qwerty Learner JSON, or TXT with one
+  word/phrase per line.
 - Blank lines and surrounding whitespace are removed. Duplicate words are
   compared without case; the first spelling and original order are preserved.
 - Imports are saved as managed JSON copies in
@@ -118,6 +130,58 @@ book needs a stable, unique ID. Current limits are 16 MiB per imported file,
 100,000 source entries, 200 characters per word/name, and 128 characters per ID.
 Wordbooks contain membership and ordering; dictionary details and future
 learning progress are separate data.
+
+### Qwerty Learner wordbooks
+
+Download a JSON file from
+[Qwerty Learner's public/dicts directory](https://github.com/RealKai42/qwerty-learner/tree/master/public/dicts)
+using **Raw / Download raw file**, then select it through **File → Import wordbook**.
+The importer automatically recognizes arrays of objects containing a string
+`name`. It imports those names as words, preserves phrases and ordering, and
+removes case-insensitive duplicates. Missing or invalid names reject the whole
+import rather than silently losing entries. Optional translations and phonetic
+fields are not required or stored in the wordbook.
+
+The five basic files receive readable titles:
+
+| Source file | Imported title |
+| --- | --- |
+| `CET4_T.json` | CET-4 · Qwerty |
+| `CET6_T.json` | CET-6 · Qwerty |
+| `KaoYan_3_T.json` | 考研英语 · Qwerty |
+| `IELTS_3_T.json` | IELTS · Qwerty |
+| `TOEFL_3_T.json` | TOEFL · Qwerty |
+
+Other Qwerty dictionaries use their filename as the title, followed by `· Qwerty`.
+The ID is derived from the filename without its extension (case-insensitive),
+not its directory or contents. Keep filenames when updating a source book;
+changed contents then use the existing replacement-confirmation workflow.
+Different books should use different filenames. Exported JSON uses the native
+Vocabulary Spark schema and preserves this ID, so no conversion is needed on
+subsequent imports. Original source files are never modified.
+
+`examples/sample-qwerty.json` is a small, locally authored format demonstration.
+The five basic datasets are bundled under
+`src/main/resources/assets/vocabulary-spark/wordbooks/` in native wordbook format.
+They are read directly from the JAR using resource streams, without extraction
+or network requests. Imported local books with the same ID override their bundled
+versions after the existing replacement confirmation; other local books appear
+alongside them. Updating the mod updates bundled books unless a local override
+exists. `WordbookLibrary.withBuiltins(...)` enables this combined library, while
+the ordinary constructor loads local books only.
+
+Only the word lists are bundled; upstream translations and audio are not.
+Source revision, original filenames and conversion details are recorded in
+`META-INF/licenses/QwertyLearner-NOTICE.txt`, alongside the upstream license.
+The word-list assets have their own upstream licensing notices and are not
+relicensed under the project's CC0 declaration.
+
+Qwerty's index lists
+multiple versions of some exams; a book's exam label alone does not establish
+that it contains a complete or current official syllabus. Its repository uses
+[GPL-3.0](https://github.com/RealKai42/qwerty-learner/blob/master/LICENSE), and its
+README attributes dictionary data to kajweb/dict and community contributions;
+check the source and applicable data permissions before redistributing a dataset.
 
 ### Interface architecture
 

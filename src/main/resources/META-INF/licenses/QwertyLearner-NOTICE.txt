@@ -1,0 +1,38 @@
+Bundled Qwerty Learner word lists
+================================
+
+Upstream project: Qwerty Learner, RealKai42 and contributors
+Repository: https://github.com/RealKai42/qwerty-learner
+Source revision: 1182426f2bd0a28c95302c33f9e19136b1262a70
+Retrieved: 2026-10-15
+Upstream repository license: GNU General Public License version 3
+License copy: QwertyLearner-GPL-3.0.txt (in this directory)
+
+Original files at that revision, under public/dicts/:
+  CET4_T.json     -> assets/vocabulary-spark/wordbooks/cet4.json    (2607 words)
+  CET6_T.json     -> assets/vocabulary-spark/wordbooks/cet6.json    (2345 words)
+  KaoYan_3_T.json -> assets/vocabulary-spark/wordbooks/kaoyan.json  (3727 words)
+  IELTS_3_T.json  -> assets/vocabulary-spark/wordbooks/ielts.json   (3575 words)
+  TOEFL_3_T.json  -> assets/vocabulary-spark/wordbooks/toefl.json   (4264 words)
+
+Original source files are available at:
+https://github.com/RealKai42/qwerty-learner/tree/1182426f2bd0a28c95302c33f9e19136b1262a70/public/dicts
+
+Modifications by Vocabulary Spark:
+  Converted the source arrays into native Wordbook JSON using QwertyWordbookAdapter.
+  Retained only each entry's name; removed translations and phonetic fields.
+  Trimmed surrounding whitespace and removed case-insensitive duplicates while
+  preserving the first spelling and source order. The postgraduate source has
+  3728 entries and produces 3727 unique words.
+  Added display names, formatVersion and stable IDs derived from source filenames.
+
+The editable wordbook JSON files are included in the mod JAR and project sources.
+These third-party word-list assets retain their upstream licensing notices;
+they are excluded from the project's CC0 declaration.
+
+Upstream README credits kajweb/dict for dictionary data and also accepts
+community-contributed wordbooks. Original provenance should be considered
+separately from the repository's software license.
+
+These are third-party study lists. Their exam labels do not certify complete
+coverage of any current official examination syllabus.
