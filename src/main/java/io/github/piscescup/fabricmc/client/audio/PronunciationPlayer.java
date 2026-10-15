@@ -10,6 +10,7 @@ import net.minecraft.client.sounds.SoundBufferLibrary;
 import net.minecraft.client.sounds.SoundEngine;
 import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundSource;
+import org.jspecify.annotations.NonNull;
 
 import java.net.URI;
 import java.util.Objects;
@@ -149,9 +150,10 @@ public final class PronunciationPlayer implements AutoCloseable {
             attenuation = SoundInstance.Attenuation.NONE;
         }
 
+        @NonNull
         @Override
         public CompletableFuture<AudioStream> getAudioStream(
-            SoundBufferLibrary library, Identifier id, boolean repeatInstantly
+            @NonNull SoundBufferLibrary library, @NonNull Identifier id, boolean repeatInstantly
         ) {
             return CompletableFuture.completedFuture(audio.openStream());
         }

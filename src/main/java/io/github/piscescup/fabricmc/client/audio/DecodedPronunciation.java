@@ -5,6 +5,7 @@ import javazoom.jl.decoder.Decoder;
 import javazoom.jl.decoder.JavaLayerException;
 import javazoom.jl.decoder.SampleBuffer;
 import net.minecraft.client.sounds.AudioStream;
+import org.jspecify.annotations.NonNull;
 
 import javax.sound.sampled.AudioFormat;
 import java.io.ByteArrayInputStream;
@@ -102,11 +103,13 @@ final class DecodedPronunciation {
             private int offset;
             private boolean closed;
 
+            @NonNull
             @Override
             public AudioFormat getFormat() {
                 return format;
             }
 
+            @NonNull
             @Override
             public ByteBuffer read(int size) throws IOException {
                 if (closed) throw new IOException("Pronunciation stream is closed");
