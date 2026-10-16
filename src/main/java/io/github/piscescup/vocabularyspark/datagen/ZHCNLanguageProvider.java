@@ -1,0 +1,103 @@
+package io.github.piscescup.vocabularyspark.datagen;
+
+import net.fabricmc.fabric.api.datagen.v1.FabricPackOutput;
+import net.fabricmc.fabric.api.datagen.v1.provider.FabricLanguageProvider;
+import net.minecraft.core.HolderLookup;
+import org.jspecify.annotations.NonNull;
+
+import java.util.concurrent.CompletableFuture;
+
+/** Simplified Chinese translations for Vocabulary Spark. */
+public final class ZHCNLanguageProvider extends FabricLanguageProvider {
+    public ZHCNLanguageProvider(
+        FabricPackOutput packOutput, CompletableFuture<HolderLookup.Provider> registryLookup
+    ) {
+        super(packOutput, "zh_cn", registryLookup);
+    }
+
+    @Override
+    public void generateTranslations(
+        HolderLookup.@NonNull Provider registryLookup,
+        TranslationBuilder translations
+    ) {
+        translations.add("key.category.vocabulary-spark.main", "Vocabulary Spark");
+        translations.add("key.vocabulary-spark.open", "打开 Vocabulary Spark");
+        translations.add("gui.vocabulary-spark.home", "首页");
+        translations.add("gui.vocabulary-spark.wordbooks", "单词本");
+        translations.add("gui.vocabulary-spark.file", "文件");
+        translations.add("gui.vocabulary-spark.view", "视图");
+        translations.add("gui.vocabulary-spark.about", "关于");
+        translations.add("gui.vocabulary-spark.about_mod", "关于 Vocabulary Spark");
+        translations.add("gui.vocabulary-spark.import", "导入单词本…");
+        translations.add("gui.vocabulary-spark.export", "导出单词本…");
+        translations.add("gui.vocabulary-spark.export_named", "导出 %s…");
+        translations.add("gui.vocabulary-spark.close", "关闭");
+        translations.add("gui.vocabulary-spark.replace", "替换");
+        translations.add("gui.vocabulary-spark.cancel", "取消");
+        translations.add("gui.vocabulary-spark.ready", "就绪");
+        translations.add("gui.vocabulary-spark.loading", "正在加载单词本…");
+        translations.add("gui.vocabulary-spark.loaded", "已加载 %s 个单词本");
+        translations.add("gui.vocabulary-spark.load_partial", "%s 个单词本加载失败，其余单词本可正常使用");
+        translations.add("gui.vocabulary-spark.importing", "正在导入单词本…");
+        translations.add("gui.vocabulary-spark.exporting", "正在导出单词本…");
+        translations.add("gui.vocabulary-spark.imported", "已导入 %s，共 %s 个单词");
+        translations.add("gui.vocabulary-spark.already_imported", "%s 已在单词本列表中");
+        translations.add("gui.vocabulary-spark.exported", "已导出 %s");
+        translations.add("gui.vocabulary-spark.operation_failed", "操作失败：%s");
+        translations.add("gui.vocabulary-spark.supported_files", "单词本 (*.json, *.txt)");
+        translations.add("gui.vocabulary-spark.overwrite_title", "替换文件？");
+        translations.add("gui.vocabulary-spark.overwrite_message", "以下文件已经存在：\n%s\n\n是否用导出的单词本替换它？");
+        translations.add("gui.vocabulary-spark.replace_book_title", "替换单词本？");
+        translations.add("gui.vocabulary-spark.replace_book_message", "已经存在 ID 相同的单词本。\n\n是否导入“%s”并替换原来的内容？\nID：%s");
+        translations.add("gui.vocabulary-spark.error_title", "单词本操作失败");
+        translations.add("gui.vocabulary-spark.error_message", "未能完成本次操作。\n\n%s");
+        translations.add("gui.vocabulary-spark.about_message", "Vocabulary Spark\n\nMinecraft 中的词汇学习空间。\n\n界面与文件选择器：TCDCommons API。\n界面架构参考 Better Statistics Screen。\n\n当前版本提供首页、本地单词本管理，以及 JSON/TXT 导入导出。");
+        translations.add("gui.vocabulary-spark.home_intro", "内置四级、六级、考研、雅思和托福词表。选择单词本开始浏览，也可以导入自己的单词本。");
+        translations.add("gui.vocabulary-spark.quick_access", "快捷入口");
+        translations.add("gui.vocabulary-spark.overview", "单词本概览");
+        translations.add("gui.vocabulary-spark.book_count", "单词本数量");
+        translations.add("gui.vocabulary-spark.word_count", "不重复单词数");
+        translations.add("gui.vocabulary-spark.selected_book", "当前选中");
+        translations.add("gui.vocabulary-spark.none_selected", "尚未选择");
+        translations.add("gui.vocabulary-spark.empty_hint", "先导入一份四级、六级、雅思或自己的单词表。");
+        translations.add("gui.vocabulary-spark.no_books", "还没有单词本。导入 JSON 或 TXT 文件即可开始。");
+        translations.add("gui.vocabulary-spark.import_first", "导入第一个单词本");
+        translations.add("gui.vocabulary-spark.book_entry", "%s · %s 词");
+        translations.add("gui.vocabulary-spark.getting_started", "使用说明");
+        translations.add("gui.vocabulary-spark.import_help", "文件 → 导入单词本\n支持 Vocabulary Spark 和 Qwerty Learner JSON。\nTXT 文件每行填写一个单词或短语。\n导入的单词本保存在本地，下次启动游戏仍可使用。");
+        translations.add("gui.vocabulary-spark.export_help", "打开单词本后即可导出。\nJSON 保留名称与 ID；TXT 只导出单词列表。");
+        translations.add("gui.vocabulary-spark.library_hint", "已内置四级、六级、考研、雅思和托福词表，也可以导入自己的单词本。选择单词本以浏览或导出，通过标签页切换。");
+        translations.add("gui.vocabulary-spark.book_size", "%s 个单词");
+        translations.add("gui.vocabulary-spark.filter_words", "筛选当前单词本中的单词…");
+        translations.add("gui.vocabulary-spark.wordbook_lookup_hint", "点击单词或短语查询释义，查到后自动打开详情。");
+        translations.add("gui.vocabulary-spark.wordbook_lookup_word", "查询“%s”的释义");
+        translations.add("gui.vocabulary-spark.no_matching_words", "没有匹配的单词。");
+        translations.add("gui.vocabulary-spark.page_count", "%s / %s · %s 个单词");
+        translations.add("gui.vocabulary-spark.search", "查词");
+        translations.add("gui.vocabulary-spark.search_submit", "搜索");
+        translations.add("gui.vocabulary-spark.search_placeholder", "输入英文单词或短语…");
+        translations.add("gui.vocabulary-spark.search_hint", "输入单词后按回车或点击搜索，即可查询释义。");
+        translations.add("gui.vocabulary-spark.search_loading", "正在查询 %s…");
+        translations.add("gui.vocabulary-spark.search_found", "已找到 %s，点击单词查看完整释义。");
+        translations.add("gui.vocabulary-spark.search_not_found", "未找到 %s，请检查拼写后重试。");
+        translations.add("gui.vocabulary-spark.search_invalid_input", "请输入 1–200 个字符的单词或短语。");
+        translations.add("gui.vocabulary-spark.search_failed", "查询失败：%s");
+        translations.add("gui.vocabulary-spark.search_connection_failed", "无法连接词典服务，请检查网络后重试。");
+        translations.add("gui.vocabulary-spark.search_word", "单词");
+        translations.add("gui.vocabulary-spark.search_pos", "词性");
+        translations.add("gui.vocabulary-spark.search_translation", "翻译");
+        translations.add("gui.vocabulary-spark.search_open_details", "点击查看词条详情");
+        translations.add("gui.vocabulary-spark.detail_back", "← 返回");
+        translations.add("gui.vocabulary-spark.detail_title", "词条详情");
+        translations.add("gui.vocabulary-spark.detail_contents", "目录");
+        translations.add("gui.vocabulary-spark.detail_definitions", "释义");
+        translations.add("gui.vocabulary-spark.detail_forms", "词形变化");
+        translations.add("gui.vocabulary-spark.detail_no_definitions", "暂无释义。");
+        translations.add("gui.vocabulary-spark.detail_no_forms", "暂无词形变化。");
+        translations.add("gui.vocabulary-spark.pronunciation_play", "点击播放 %s 读音");
+        translations.add("gui.vocabulary-spark.pronunciation_loading", "正在加载 %s 读音…");
+        translations.add("gui.vocabulary-spark.pronunciation_playing", "正在播放 %s，点击重新播放");
+        translations.add("gui.vocabulary-spark.pronunciation_failed", "读音加载或播放失败，点击重试。");
+        translations.add("gui.vocabulary-spark.pronunciation_muted", "读音已静音，请检查主音量和界面音量。");
+    }
+}
