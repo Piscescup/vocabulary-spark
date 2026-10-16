@@ -30,18 +30,23 @@ public final class ConfirmScreen extends TCompletableScreen<Boolean> {
             @Override
             protected void initBodyCallback(TElement body) {
                 var bounds = body.getBounds();
-                body.add(new ScrollPanelWidget(bounds.x + 10, bounds.y + 8,
+                body.add(new ScrollPanelWidget(
+                    bounds.x + 10, bounds.y + 8,
                     bounds.width - 20, bounds.height - 43, panel -> {
-                        var bb = panel.getBounds();
-                        panel.add(Labels.paragraph(message, bb.x + 10, bb.y + 10,
-                            bb.width - 20, 0xFFFFFFFF));
-                    }
+                    var bb = panel.getBounds();
+                    panel.add(Labels.paragraph(
+                        message, bb.x + 10, bb.y + 10,
+                        bb.width - 20, 0xFFFFFFFF
+                    ));
+                }
                 ));
                 int width = (bounds.width - 30) / 2;
-                body.add(Buttons.button(text("replace"), bounds.x + 10, bounds.endY - 26,
+                body.add(Buttons.button(
+                    text("replace"), bounds.x + 10, bounds.endY - 26,
                     width, 20, true, () -> resolve(true)
                 ));
-                body.add(Buttons.button(text("cancel"), bounds.x + 20 + width, bounds.endY - 26,
+                body.add(Buttons.button(
+                    text("cancel"), bounds.x + 20 + width, bounds.endY - 26,
                     width, 20, true, () -> resolve(false)
                 ));
             }

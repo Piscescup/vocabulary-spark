@@ -34,8 +34,9 @@ public final class MenubarPanel extends TElement {
             var button = new TButtonWidget.Transparent();
             button.getLabel()
                 .setText(item.title());
-            int width = Math.max(34, button.getLabel()
-                .getTextWidth() + 12
+            int width = Math.max(
+                34, button.getLabel()
+                    .getTextWidth() + 12
             );
             button.setBounds(x, bb.y + 1, width, bb.height - 2);
             button.contextMenuProperty()

@@ -9,7 +9,9 @@ import net.minecraft.client.gui.screens.Screen;
 
 import static io.github.piscescup.vocabularyspark.utils.ComponentUtils.text;
 
-/** A separate daily-plan overview; Back or Escape returns to daily study. */
+/**
+ * A separate daily-plan overview; Back or Escape returns to daily study.
+ */
 public final class DailyWordsScreen extends TScreenPlus implements ILastScreenProvider {
     private final Screen previous;
     private final DailyWordsWidget overview;
@@ -21,10 +23,14 @@ public final class DailyWordsScreen extends TScreenPlus implements ILastScreenPr
     }
 
     @Override
-    public Screen getLastScreen() { return previous; }
+    public Screen getLastScreen() {
+        return previous;
+    }
 
     @Override
-    public boolean isAllowingInGameHud() { return false; }
+    public boolean isAllowingInGameHud() {
+        return false;
+    }
 
     @Override
     protected void initCallback() {

@@ -21,8 +21,11 @@ import org.jspecify.annotations.NonNull;
  * @since 1.0.0
  */
 public final class ComponentFormatUtils {
-    /** Prevents instantiation of this utility class. */
-    private ComponentFormatUtils() {}
+    /**
+     * Prevents instantiation of this utility class.
+     */
+    private ComponentFormatUtils() {
+    }
 
     /**
      * Formats a headword in bold.
@@ -32,7 +35,8 @@ public final class ComponentFormatUtils {
      */
     @NonNull
     public static MutableComponent wordFormat(@NonNull String word) {
-        return Component.literal(word).withStyle(ChatFormatting.BOLD);
+        return Component.literal(word)
+            .withStyle(ChatFormatting.BOLD);
     }
 
     /**
@@ -43,7 +47,8 @@ public final class ComponentFormatUtils {
      */
     @NonNull
     public static MutableComponent englishDefinitionFormat(@NonNull String definition) {
-        return Component.literal(definition).withStyle(ChatFormatting.GRAY);
+        return Component.literal(definition)
+            .withStyle(ChatFormatting.GRAY);
     }
 
     /**
@@ -54,7 +59,8 @@ public final class ComponentFormatUtils {
      */
     @NonNull
     public static MutableComponent translationFormat(@NonNull String translation) {
-        return Component.literal(translation).withStyle(ChatFormatting.WHITE);
+        return Component.literal(translation)
+            .withStyle(ChatFormatting.WHITE);
     }
 
     /**
@@ -71,11 +77,13 @@ public final class ComponentFormatUtils {
     public static MutableComponent exampleFormat(String english, String chinese) {
         MutableComponent example = Component.empty();
         if (!english.isEmpty()) {
-            example.append(Component.literal(english).withStyle(ChatFormatting.ITALIC, ChatFormatting.GRAY));
+            example.append(Component.literal(english)
+                .withStyle(ChatFormatting.ITALIC, ChatFormatting.GRAY));
         }
         if (!chinese.isEmpty()) {
             if (!english.isEmpty()) example.append("\n");
-            example.append(Component.literal(chinese).withStyle(ChatFormatting.GRAY));
+            example.append(Component.literal(chinese)
+                .withStyle(ChatFormatting.GRAY));
         }
         return example;
     }
@@ -102,7 +110,8 @@ public final class ComponentFormatUtils {
     public static MutableComponent pronunciationAreaFormat(
         @NonNull String area
     ) {
-        return Component.literal(area).withStyle(ChatFormatting.ITALIC, ChatFormatting.GRAY);
+        return Component.literal(area)
+            .withStyle(ChatFormatting.ITALIC, ChatFormatting.GRAY);
     }
 
     /**
@@ -118,7 +127,8 @@ public final class ComponentFormatUtils {
         @NonNull String symbol,
         ChatFormatting... styles
     ) {
-        return Component.literal(symbol).withStyle(ChatFormatting.BOLD, ChatFormatting.BLACK, ChatFormatting.UNDERLINE)
+        return Component.literal(symbol)
+            .withStyle(ChatFormatting.BOLD, ChatFormatting.BLACK, ChatFormatting.UNDERLINE)
             .withStyle(styles);
     }
 }

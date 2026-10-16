@@ -27,17 +27,29 @@ import java.util.concurrent.CompletableFuture;
  * @since 1.0.0
  */
 public final class PronunciationPlayer implements AutoCloseable {
-    /** The current state of a pronunciation request. */
+    /**
+     * The current state of a pronunciation request.
+     */
     public enum State {
-        /** No request is active for this pronunciation. */
+        /**
+         * No request is active for this pronunciation.
+         */
         IDLE,
-        /** The clip is being downloaded or decoded. */
+        /**
+         * The clip is being downloaded or decoded.
+         */
         LOADING,
-        /** The sound engine has started the clip. */
+        /**
+         * The sound engine has started the clip.
+         */
         PLAYING,
-        /** Loading or starting playback failed; another click may retry. */
+        /**
+         * Loading or starting playback failed; another click may retry.
+         */
         FAILED,
-        /** The sound engine accepted the clip silently because of sound settings. */
+        /**
+         * The sound engine accepted the clip silently because of sound settings.
+         */
         MUTED
     }
 
@@ -74,31 +86,39 @@ public final class PronunciationPlayer implements AutoCloseable {
         requested = uri;
         state = State.LOADING;
         long request = sequence;
-        audio.load(uri).whenCompleteAsync((clip, failure) -> {
-            if (closed || sequence != request) return;
-            if (failure != null) {
-                state = State.FAILED;
-                VocabularySparkModReferences.MOD_LOGGER.warn("Unable to load pronunciation {}", uri, failure);
-                return;
-            }
-            try {
-                current = new PronunciationSound(clip);
-                var result = client.getSoundManager().play(current);
-                state = switch (result) {
-                    case STARTED -> State.PLAYING;
-                    case STARTED_SILENTLY -> State.MUTED;
-                    case NOT_STARTED -> State.FAILED;
-                };
-                if (result == SoundEngine.PlayResult.NOT_STARTED) {
-                    VocabularySparkModReferences.MOD_LOGGER.warn("The sound engine could not start pronunciation {}", uri);
-                }
-            } catch (RuntimeException exception) {
-                if (current != null) client.getSoundManager().stop(current);
-                current = null;
-                state = State.FAILED;
-                VocabularySparkModReferences.MOD_LOGGER.warn("Unable to play pronunciation {}", uri, exception);
-            }
-        }, client::schedule);
+        audio.load(uri)
+            .whenCompleteAsync(
+                (clip, failure) -> {
+                    if (closed || sequence != request) return;
+                    if (failure != null) {
+                        state = State.FAILED;
+                        VocabularySparkModReferences.MOD_LOGGER.warn("Unable to load pronunciation {}", uri, failure);
+                        return;
+                    }
+                    try {
+                        current = new PronunciationSound(clip);
+                        var result = client.getSoundManager()
+                            .play(current);
+                        state = switch (result) {
+                            case STARTED -> State.PLAYING;
+                            case STARTED_SILENTLY -> State.MUTED;
+                            case NOT_STARTED -> State.FAILED;
+                        };
+                        if (result == SoundEngine.PlayResult.NOT_STARTED) {
+                            VocabularySparkModReferences.MOD_LOGGER.warn(
+                                "The sound engine could not start pronunciation {}", uri);
+                        }
+                    } catch (RuntimeException exception) {
+                        if (current != null) {
+                            client.getSoundManager()
+                                .stop(current);
+                        }
+                        current = null;
+                        state = State.FAILED;
+                        VocabularySparkModReferences.MOD_LOGGER.warn("Unable to play pronunciation {}", uri, exception);
+                    }
+                }, client::schedule
+            );
     }
 
     /**
@@ -111,24 +131,34 @@ public final class PronunciationPlayer implements AutoCloseable {
         return Objects.equals(requested, uri) ? state : State.IDLE;
     }
 
-    /** Updates the playing state when the sound engine finishes a clip. */
+    /**
+     * Updates the playing state when the sound engine finishes a clip.
+     */
     public void tick() {
-        if (state == State.PLAYING && current != null && !client.getSoundManager().isActive(current)) {
+        if (state == State.PLAYING && current != null && !client.getSoundManager()
+            .isActive(current)) {
             current = null;
             state = State.IDLE;
         }
     }
 
-    /** Stops the current clip and prevents any older request from starting it again. */
+    /**
+     * Stops the current clip and prevents any older request from starting it again.
+     */
     public void stop() {
         sequence++;
-        if (current != null) client.getSoundManager().stop(current);
+        if (current != null) {
+            client.getSoundManager()
+                .stop(current);
+        }
         current = null;
         requested = null;
         state = State.IDLE;
     }
 
-    /** Stops playback and releases downloads, decoder threads and cached clips. */
+    /**
+     * Stops playback and releases downloads, decoder threads and cached clips.
+     */
     @Override
     public void close() {
         if (closed) return;
@@ -137,12 +167,17 @@ public final class PronunciationPlayer implements AutoCloseable {
         audio.close();
     }
 
-    /** Supplies a fresh PCM stream through Fabric's existing sound extension. */
+    /**
+     * Supplies a fresh PCM stream through Fabric's existing sound extension.
+     */
     private static final class PronunciationSound extends AbstractSoundInstance implements FabricSoundInstance {
         private final DecodedPronunciation audio;
 
         private PronunciationSound(DecodedPronunciation audio) {
-            super(VocabularySparkModReferences.fromPath("pronunciation"), SoundSource.UI, SoundInstance.createUnseededRandom());
+            super(
+                VocabularySparkModReferences.fromPath("pronunciation"), SoundSource.UI,
+                SoundInstance.createUnseededRandom()
+            );
             this.audio = audio;
             volume = 1.0f;
             pitch = 1.0f;

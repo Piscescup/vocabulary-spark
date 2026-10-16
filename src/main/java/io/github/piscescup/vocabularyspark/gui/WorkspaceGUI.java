@@ -11,7 +11,6 @@ import io.github.piscescup.vocabularyspark.gui.view.editor.TabStripPanel;
 import io.github.piscescup.vocabularyspark.gui.view.tab.WorkspaceTabGUI;
 
 
-
 /**
  * Menu, tab strip and active tab view; refreshed from the controller's revision.
  */
@@ -53,7 +52,9 @@ public final class WorkspaceGUI extends TElement {
         page.setBounds(bb.x + 1, bb.y + 40, bb.width - 2, Math.max(1, bb.height - 58));
         add(page);
 
-        add(Labels.label(workspace.status(), bb.x + 7, bb.endY - 17,
-            bb.width - 14, 16, WidgetTheme.MUTED));
+        add(Labels.label(
+            workspace.status(), bb.x + 7, bb.endY - 17,
+            bb.width - 14, 16, WidgetTheme.MUTED
+        ));
     }
 }

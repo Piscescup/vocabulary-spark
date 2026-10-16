@@ -40,8 +40,9 @@ public enum MenubarItem {
                             text("export_named", WordbookTitles.title(book)), ignored -> actions.exportBook(book)));
                     menu.addSeparator();
                 }
-                menu.addButton(text("close"), ignored -> client.gui.screen()
-                    .onClose()
+                menu.addButton(
+                    text("close"), ignored -> client.gui.screen()
+                        .onClose()
                 );
             }
             case VIEW -> {

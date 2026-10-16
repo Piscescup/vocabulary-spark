@@ -17,9 +17,11 @@ import java.util.function.Function;
 
 import static io.github.piscescup.vocabularyspark.utils.ComponentUtils.text;
 
-/** Search state survives page changes. Only the latest submitted query may update it. */
+/**
+ * Search state survives page changes. Only the latest submitted query may update it.
+ */
 public final class DictionarySearch implements AutoCloseable {
-    public enum State { IDLE, LOADING, READY, NOT_FOUND, INVALID_INPUT, FAILED }
+    public enum State {IDLE, LOADING, READY, NOT_FOUND, INVALID_INPUT, FAILED}
 
     private final Function<String, CompletableFuture<Optional<Word>>> lookup;
     private final Runnable closeDictionary;
@@ -36,18 +38,34 @@ public final class DictionarySearch implements AutoCloseable {
         this(dictionary::lookup, dictionary::close, clientExecutor);
     }
 
-    DictionarySearch(Function<String, CompletableFuture<Optional<Word>>> lookup, Runnable closeDictionary,
-        Executor clientExecutor) {
+    DictionarySearch(
+        Function<String, CompletableFuture<Optional<Word>>> lookup, Runnable closeDictionary,
+        Executor clientExecutor
+    ) {
         this.lookup = Objects.requireNonNull(lookup);
         this.closeDictionary = Objects.requireNonNull(closeDictionary);
         this.clientExecutor = clientExecutor;
     }
 
-    public String input() { return input; }
-    public void setInput(String input) { this.input = input; }
-    public State state() { return state; }
-    public long revision() { return revision; }
-    public Optional<Word> result() { return Optional.ofNullable(result); }
+    public String input() {
+        return input;
+    }
+
+    public void setInput(String input) {
+        this.input = input;
+    }
+
+    public State state() {
+        return state;
+    }
+
+    public long revision() {
+        return revision;
+    }
+
+    public Optional<Word> result() {
+        return Optional.ofNullable(result);
+    }
 
     public Component message() {
         return switch (state) {
@@ -61,10 +79,13 @@ public final class DictionarySearch implements AutoCloseable {
     }
 
     public void submit() {
-        submit(word -> {});
+        submit(word -> {
+        });
     }
 
-    /** Calls {@code onFound} on the client executor only for the latest successful query. */
+    /**
+     * Calls {@code onFound} on the client executor only for the latest successful query.
+     */
     public void submit(Consumer<Word> onFound) {
         Objects.requireNonNull(onFound, "onFound");
         long request = ++sequence;
@@ -72,7 +93,8 @@ public final class DictionarySearch implements AutoCloseable {
         submitted = input.strip();
         result = null;
         if (submitted.isEmpty() || submitted.length() > 200
-            || submitted.codePoints().anyMatch(Character::isISOControl)) {
+            || submitted.codePoints()
+            .anyMatch(Character::isISOControl)) {
             state = State.INVALID_INPUT;
             revision++;
             return;
@@ -80,26 +102,29 @@ public final class DictionarySearch implements AutoCloseable {
         state = State.LOADING;
         revision++;
         pending = lookup.apply(submitted);
-        pending.whenCompleteAsync((word, failure) -> {
-            if (sequence != request) return;
-            if (failure == null) {
-                result = word.orElse(null);
-                state = result == null ? State.NOT_FOUND : State.READY;
-            } else {
-                while (failure instanceof CompletionException && failure.getCause() != null) {
-                    failure = failure.getCause();
-                }
-                VocabularySparkModReferences.MOD_LOGGER.warn("Dictionary query failed", failure);
-                if (failure instanceof HttpTimeoutException || failure instanceof ConnectException) {
-                    error = text("search_connection_failed").getString();
+        pending.whenCompleteAsync(
+            (word, failure) -> {
+                if (sequence != request) return;
+                if (failure == null) {
+                    result = word.orElse(null);
+                    state = result == null ? State.NOT_FOUND : State.READY;
                 } else {
-                    error = failure.getMessage() == null ? failure.getClass().getSimpleName() : failure.getMessage();
+                    while (failure instanceof CompletionException && failure.getCause() != null) {
+                        failure = failure.getCause();
+                    }
+                    VocabularySparkModReferences.MOD_LOGGER.warn("Dictionary query failed", failure);
+                    if (failure instanceof HttpTimeoutException || failure instanceof ConnectException) {
+                        error = text("search_connection_failed").getString();
+                    } else {
+                        error = failure.getMessage() == null ? failure.getClass()
+                            .getSimpleName() : failure.getMessage();
+                    }
+                    state = State.FAILED;
                 }
-                state = State.FAILED;
-            }
-            revision++;
-            if (state == State.READY) onFound.accept(result);
-        }, clientExecutor);
+                revision++;
+                if (state == State.READY) onFound.accept(result);
+            }, clientExecutor
+        );
     }
 
     @Override

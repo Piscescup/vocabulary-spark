@@ -37,10 +37,14 @@ final class PronunciationAudioCache implements AutoCloseable {
     private int cachedBytes;
     private boolean closed;
 
-    /** Creates a cache using HTTP(S) downloads and a background decoder. */
+    /**
+     * Creates a cache using HTTP(S) downloads and a background decoder.
+     */
     PronunciationAudioCache() {
-        http = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10))
-            .followRedirects(HttpClient.Redirect.NORMAL).build();
+        http = HttpClient.newBuilder()
+            .connectTimeout(Duration.ofSeconds(10))
+            .followRedirects(HttpClient.Redirect.NORMAL)
+            .build();
         decoder = Executors.newSingleThreadExecutor(runnable -> {
             var thread = new Thread(runnable, "Vocabulary Spark pronunciation decoder");
             thread.setDaemon(true);
@@ -95,14 +99,19 @@ final class PronunciationAudioCache implements AutoCloseable {
                     cachedBytes += audio.byteSize();
                     while (cache.size() > MAX_ENTRIES || cachedBytes > MAX_CACHE_BYTES) {
                         var oldest = cache.pollFirstEntry();
-                        cachedBytes -= oldest.getValue().byteSize();
+                        cachedBytes -= oldest.getValue()
+                            .byteSize();
                     }
                 }
             }
             // Publish only after updating the cache, so an immediate retry is safe.
-            if (failure != null) shared.completeExceptionally(failure);
-            else if (audio == null) shared.completeExceptionally(new IOException("No decoded pronunciation"));
-            else shared.complete(audio);
+            if (failure != null) {
+                shared.completeExceptionally(failure);
+            } else if (audio == null) {
+                shared.completeExceptionally(new IOException("No decoded pronunciation"));
+            } else {
+                shared.complete(audio);
+            }
         });
         shared.whenComplete((audio, failure) -> {
             if (shared.isCancelled()) future.cancel(true);
@@ -111,35 +120,46 @@ final class PronunciationAudioCache implements AutoCloseable {
     }
 
     private CompletableFuture<DecodedPronunciation> download(URI uri) {
-        var request = HttpRequest.newBuilder(uri).timeout(Duration.ofSeconds(20))
+        var request = HttpRequest.newBuilder(uri)
+            .timeout(Duration.ofSeconds(20))
             .header("Accept", "audio/mpeg, application/octet-stream;q=0.5")
             .header("User-Agent", "Vocabulary-Spark/1.0")
-            .GET().build();
-        var response = http.sendAsync(request,
-            HttpResponse.BodyHandlers.limiting(HttpResponse.BodyHandlers.ofByteArray(), MAX_DOWNLOAD_BYTES));
-        var decoded = response.thenApplyAsync(result -> {
-            try {
-                if (result.statusCode() < 200 || result.statusCode() >= 300) {
-                    throw new IOException("Pronunciation service returned HTTP " + result.statusCode());
-                }
-                return DecodedPronunciation.decode(result.body());
-            } catch (IOException exception) {
-                throw new CompletionException(exception);
-            }
-        }, decoder).orTimeout(25, TimeUnit.SECONDS);
+            .GET()
+            .build();
+        var response = http.sendAsync(
+            request,
+            HttpResponse.BodyHandlers.limiting(HttpResponse.BodyHandlers.ofByteArray(), MAX_DOWNLOAD_BYTES)
+        );
+        var decoded = response.thenApplyAsync(
+                result -> {
+                    try {
+                        if (result.statusCode() < 200 || result.statusCode() >= 300) {
+                            throw new IOException("Pronunciation service returned HTTP " + result.statusCode());
+                        }
+                        return DecodedPronunciation.decode(result.body());
+                    } catch (IOException exception) {
+                        throw new CompletionException(exception);
+                    }
+                }, decoder
+            )
+            .orTimeout(25, TimeUnit.SECONDS);
         decoded.whenComplete((audio, failure) -> {
             if (failure != null) response.cancel(true);
         });
         return decoded;
     }
 
-    /** Cancels pending work and releases cached audio and owned executors. */
+    /**
+     * Cancels pending work and releases cached audio and owned executors.
+     */
     @Override
     public synchronized void close() {
         if (closed) return;
         closed = true;
         // Cancellation callbacks remove entries, so iterate over a snapshot.
-        for (var future : pending.values().toArray(CompletableFuture[]::new)) future.cancel(true);
+        for (var future : pending.values()
+            .toArray(CompletableFuture[]::new))
+            future.cancel(true);
         pending.clear();
         cache.clear();
         cachedBytes = 0;

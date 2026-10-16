@@ -15,17 +15,18 @@ import net.minecraft.network.chat.Component;
  * @since 1.0.0
  */
 public final class Labels {
-    private Labels() {}
+    private Labels() {
+    }
 
     /**
      * Creates a label with the default text shadow.
      *
-     * @param text the text to display
-     * @param x the horizontal position
-     * @param y the vertical position
-     * @param width the width, clamped to at least one pixel
+     * @param text   the text to display
+     * @param x      the horizontal position
+     * @param y      the vertical position
+     * @param width  the width, clamped to at least one pixel
      * @param height the height, clamped to at least one pixel
-     * @param color the ARGB text color
+     * @param color  the ARGB text color
      * @return a configured, unattached label
      */
     public static TLabelElement label(Component text, int x, int y, int width, int height, int color) {
@@ -35,12 +36,12 @@ public final class Labels {
     /**
      * Creates a label with an explicit shadow setting.
      *
-     * @param text the text to display
-     * @param x the horizontal position
-     * @param y the vertical position
-     * @param width the width, clamped to at least one pixel
+     * @param text   the text to display
+     * @param x      the horizontal position
+     * @param y      the vertical position
+     * @param width  the width, clamped to at least one pixel
      * @param height the height, clamped to at least one pixel
-     * @param color the ARGB text color
+     * @param color  the ARGB text color
      * @param shadow whether to draw a text shadow
      * @return a configured, unattached label
      */
@@ -48,10 +49,14 @@ public final class Labels {
         Component text, int x, int y, int width, int height, int color, boolean shadow
     ) {
         var label = new TLabelElement(text);
-        label.textColorProperty().set(color, Labels.class);
-        label.dropShadowProperty().set(shadow, Labels.class);
-        label.hoverableProperty().set(false, Labels.class);
-        label.focusableProperty().set(false, Labels.class);
+        label.textColorProperty()
+            .set(color, Labels.class);
+        label.dropShadowProperty()
+            .set(shadow, Labels.class);
+        label.hoverableProperty()
+            .set(false, Labels.class);
+        label.focusableProperty()
+            .set(false, Labels.class);
         label.setBounds(x, y, Math.max(1, width), Math.max(1, height));
         return label;
     }
@@ -59,9 +64,9 @@ public final class Labels {
     /**
      * Creates a wrapped paragraph at normal scale with a text shadow.
      *
-     * @param text the text to display
-     * @param x the horizontal position
-     * @param y the vertical position
+     * @param text  the text to display
+     * @param x     the horizontal position
+     * @param y     the vertical position
      * @param width the wrapping width, clamped to at least one pixel
      * @param color the ARGB text color
      * @return an unattached paragraph with its height measured
@@ -73,9 +78,9 @@ public final class Labels {
     /**
      * Creates a wrapped paragraph at the supplied scale with a text shadow.
      *
-     * @param text the text to display
-     * @param x the horizontal position
-     * @param y the vertical position
+     * @param text  the text to display
+     * @param x     the horizontal position
+     * @param y     the vertical position
      * @param width the wrapping width, clamped to at least one pixel
      * @param color the ARGB text color
      * @param scale the text scale
@@ -88,12 +93,12 @@ public final class Labels {
     /**
      * Creates a wrapped paragraph aligned to its upper-left corner.
      *
-     * @param text the text to display
-     * @param x the horizontal position
-     * @param y the vertical position
-     * @param width the wrapping width, clamped to at least one pixel
-     * @param color the ARGB text color
-     * @param scale the text scale
+     * @param text   the text to display
+     * @param x      the horizontal position
+     * @param y      the vertical position
+     * @param width  the wrapping width, clamped to at least one pixel
+     * @param color  the ARGB text color
+     * @param scale  the text scale
      * @param shadow whether to draw a text shadow
      * @return an unattached paragraph with its height measured
      */
@@ -101,9 +106,12 @@ public final class Labels {
         Component text, int x, int y, int width, int color, double scale, boolean shadow
     ) {
         var label = label(text, x, y, width, 1, color, shadow);
-        label.textScaleProperty().set(scale, Labels.class);
-        label.textAlignmentProperty().set(CompassDirection.NORTH_WEST, Labels.class);
-        label.wrapTextProperty().set(true, Labels.class);
+        label.textScaleProperty()
+            .set(scale, Labels.class);
+        label.textAlignmentProperty()
+            .set(CompassDirection.NORTH_WEST, Labels.class);
+        label.wrapTextProperty()
+            .set(true, Labels.class);
         label.setBoundsToFitText(x, y, Math.max(1, width));
         return label;
     }

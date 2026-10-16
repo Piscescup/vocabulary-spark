@@ -25,17 +25,21 @@ public final class StudyStore {
     private StudyStore() {
     }
 
-    /** Loads a complete plan only when its overview is opened or refreshed. */
+    /**
+     * Loads a complete plan only when its overview is opened or refreshed.
+     */
     public static StudyPlan plan(Path database, Wordbook book, LocalDate day) throws IOException {
         try (var connection = WordbookDatabase.open(database)) {
             connection.setAutoCommit(false);
             try {
                 ensurePlan(connection, day);
                 var entries = new ArrayList<StudyPlan.Entry>();
-                try (var query = connection.prepareStatement("""
-                    SELECT word_key,word,kind,done,last_grade,review_required
-                    FROM daily_items WHERE day=? ORDER BY done,slot
-                    """)) {
+                try (
+                    var query = connection.prepareStatement("""
+                        SELECT word_key,word,kind,done,last_grade,review_required
+                        FROM daily_items WHERE day=? ORDER BY done,slot
+                        """)
+                ) {
                     query.setString(1, day.toString());
                     try (var rows = query.executeQuery()) {
                         while (rows.next()) {
@@ -45,8 +49,11 @@ public final class StudyStore {
                                 case "UNFAMILIAR" -> StudyPlan.Status.UNFAMILIAR;
                                 default -> StudyPlan.Status.UNSEEN;
                             };
-                            entries.add(new StudyPlan.Entry(rows.getString(1), rows.getString(2),
-                                rows.getString(3).equals("REVIEW"), rows.getInt(4) != 0, status, rows.getInt(6) != 0));
+                            entries.add(new StudyPlan.Entry(
+                                rows.getString(1), rows.getString(2),
+                                rows.getString(3)
+                                    .equals("REVIEW"), rows.getInt(4) != 0, status, rows.getInt(6) != 0
+                            ));
                         }
                     }
                 }

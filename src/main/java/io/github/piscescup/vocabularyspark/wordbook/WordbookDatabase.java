@@ -15,13 +15,18 @@ import java.util.ArrayList;
 import java.util.HexFormat;
 import java.util.Locale;
 
-/** One transactional, indexed SQLite database per wordbook. Call only on an I/O worker. */
+/**
+ * One transactional, indexed SQLite database per wordbook. Call only on an I/O worker.
+ */
 public final class WordbookDatabase {
     private static final int SCHEMA_VERSION = 2;
-    private WordbookDatabase() {}
+
+    private WordbookDatabase() {
+    }
 
     public static Connection open(Path path) throws IOException, SQLException {
-        Files.createDirectories(path.toAbsolutePath().getParent());
+        Files.createDirectories(path.toAbsolutePath()
+            .getParent());
         loadDriver();
         Connection connection = DriverManager.getConnection("jdbc:sqlite:" + path.toAbsolutePath());
         try (var statement = connection.createStatement()) {
@@ -31,7 +36,10 @@ public final class WordbookDatabase {
                 throw new SQLException("Invalid Vocabulary Spark SQLite format");
             }
             if (version == 0) {
-                try (var tables = statement.executeQuery("SELECT COUNT(*) FROM sqlite_schema WHERE name NOT GLOB 'sqlite_*'")) {
+                try (
+                    var tables = statement.executeQuery(
+                        "SELECT COUNT(*) FROM sqlite_schema WHERE name NOT GLOB 'sqlite_*'")
+                ) {
                     if (tables.next() && tables.getInt(1) > 0) {
                         throw new SQLException("Expected the current Vocabulary Spark database format");
                     }
@@ -47,7 +55,9 @@ public final class WordbookDatabase {
         }
     }
 
-    /** Initializes an empty database with the current tables and indexes. */
+    /**
+     * Initializes an empty database with the current tables and indexes.
+     */
     private static void createSchema(Connection connection) throws SQLException {
         connection.setAutoCommit(false);
         try (var statement = connection.createStatement()) {
@@ -60,7 +70,8 @@ public final class WordbookDatabase {
                 CREATE TABLE words (
                   position INTEGER PRIMARY KEY, word TEXT NOT NULL, word_key TEXT NOT NULL UNIQUE)
                 """);
-            statement.execute("CREATE TABLE settings (singleton INTEGER PRIMARY KEY CHECK(singleton=1), daily_goal INTEGER NOT NULL)");
+            statement.execute(
+                "CREATE TABLE settings (singleton INTEGER PRIMARY KEY CHECK(singleton=1), daily_goal INTEGER NOT NULL)");
             statement.execute("INSERT INTO settings VALUES(1,20)");
             statement.execute("""
                 CREATE TABLE progress (
@@ -117,7 +128,9 @@ public final class WordbookDatabase {
         }
     }
 
-    /** Finishes an isolated export as a single portable database, with no required WAL sidecar. */
+    /**
+     * Finishes an isolated export as a single portable database, with no required WAL sidecar.
+     */
     static void writePortable(Path path, Wordbook book) throws IOException {
         write(path, book, true, false);
         finishPortable(path);
@@ -148,39 +161,59 @@ public final class WordbookDatabase {
         }
     }
 
-    /** Replacing a book keeps progress for words still present; the entire update is atomic. */
+    /**
+     * Replacing a book keeps progress for words still present; the entire update is atomic.
+     */
     public static void write(Path path, Wordbook book, boolean replace, boolean builtin) throws IOException {
         try (var connection = open(path)) {
             String origin = builtin ? "builtin" : "local";
             String hash = contentHash(book);
-            try (var query = connection.createStatement(); var rows = query.executeQuery("SELECT origin,content_hash FROM book WHERE singleton=1")) {
+            try (
+                var query = connection.createStatement();
+                var rows = query.executeQuery("SELECT origin,content_hash FROM book WHERE singleton=1")
+            ) {
                 if (rows.next()) {
-                    if (builtin && rows.getString(1).equals("local")) return;
-                    if (!replace && rows.getString(1).equals("local")) throw new java.nio.file.FileAlreadyExistsException(path.toString());
+                    if (builtin && rows.getString(1)
+                        .equals("local")) {
+                        return;
+                    }
+                    if (!replace && rows.getString(1)
+                        .equals("local")) {
+                        throw new java.nio.file.FileAlreadyExistsException(path.toString());
+                    }
                     if (origin.equals(rows.getString(1)) && hash.equals(rows.getString(2))) return;
                 }
             }
             connection.setAutoCommit(false);
             try {
                 try (var statement = connection.createStatement()) {
-                    statement.execute("CREATE TEMP TABLE incoming (position INTEGER, word TEXT, word_key TEXT PRIMARY KEY)");
+                    statement.execute(
+                        "CREATE TEMP TABLE incoming (position INTEGER, word TEXT, word_key TEXT PRIMARY KEY)");
                 }
                 try (var insert = connection.prepareStatement("INSERT INTO incoming VALUES(?,?,?)")) {
-                    for (int index = 0; index < book.words().size(); index++) {
-                        String word = book.words().get(index);
+                    for (int index = 0; index < book.words()
+                        .size(); index++) {
+                        String word = book.words()
+                            .get(index);
                         insert.setInt(1, index);
                         insert.setString(2, word);
                         insert.setString(3, word.toLowerCase(Locale.ROOT));
                         insert.addBatch();
-                        if ((index + 1) % 500 == 0) { insert.executeBatch(); insert.clearBatch(); }
+                        if ((index + 1) % 500 == 0) {
+                            insert.executeBatch();
+                            insert.clearBatch();
+                        }
                     }
                     insert.executeBatch();
                 }
                 try (var statement = connection.createStatement()) {
-                    statement.executeUpdate("DELETE FROM progress WHERE word_key NOT IN (SELECT word_key FROM incoming)");
-                    statement.executeUpdate("DELETE FROM daily_items WHERE done=0 AND word_key NOT IN (SELECT word_key FROM incoming)");
+                    statement.executeUpdate(
+                        "DELETE FROM progress WHERE word_key NOT IN (SELECT word_key FROM incoming)");
+                    statement.executeUpdate(
+                        "DELETE FROM daily_items WHERE done=0 AND word_key NOT IN (SELECT word_key FROM incoming)");
                     statement.executeUpdate("DELETE FROM words");
-                    statement.executeUpdate("INSERT INTO words SELECT position,word,word_key FROM incoming ORDER BY position");
+                    statement.executeUpdate(
+                        "INSERT INTO words SELECT position,word,word_key FROM incoming ORDER BY position");
                 }
                 try (var metadata = connection.prepareStatement("INSERT OR REPLACE INTO book VALUES(1,?,?,?,?,?)")) {
                     metadata.setString(1, book.id());
@@ -208,7 +241,8 @@ public final class WordbookDatabase {
                 digest.update((byte) 0);
                 digest.update(word.getBytes(StandardCharsets.UTF_8));
             }
-            return HexFormat.of().formatHex(digest.digest());
+            return HexFormat.of()
+                .formatHex(digest.digest());
         } catch (NoSuchAlgorithmException exception) {
             throw new AssertionError(exception);
         }

@@ -8,7 +8,9 @@ import java.util.Objects;
 
 import static io.github.piscescup.vocabularyspark.utils.ComponentUtils.text;
 
-/** Tabs are controller state; each tab is rendered by a separate TCDCommons view. */
+/**
+ * Tabs are controller state; each tab is rendered by a separate TCDCommons view.
+ */
 public sealed interface WorkspaceTab {
     Component title();
 
@@ -16,8 +18,14 @@ public sealed interface WorkspaceTab {
         HOME("home"), SEARCH("search"), WORDBOOKS("wordbooks"), STUDY("study");
 
         private final String key;
-        Page(String key) { this.key = key; }
-        public Component title() { return text(key); }
+
+        Page(String key) {
+            this.key = key;
+        }
+
+        public Component title() {
+            return text(key);
+        }
     }
 
     record Book(String bookId, String name) implements WorkspaceTab {
@@ -25,7 +33,13 @@ public sealed interface WorkspaceTab {
             Objects.requireNonNull(bookId);
             Objects.requireNonNull(name);
         }
-        public Book(Wordbook book) { this(book.id(), book.name()); }
-        public Component title() { return WordbookTitles.title(bookId, name); }
+
+        public Book(Wordbook book) {
+            this(book.id(), book.name());
+        }
+
+        public Component title() {
+            return WordbookTitles.title(bookId, name);
+        }
     }
 }

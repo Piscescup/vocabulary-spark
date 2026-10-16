@@ -16,8 +16,10 @@ import io.github.piscescup.vocabularyspark.gui.controller.DictionarySearch;
 import io.github.piscescup.vocabularyspark.gui.controller.WordbookActions;
 import io.github.piscescup.vocabularyspark.gui.controller.WorkspaceTab;
 import io.github.piscescup.vocabularyspark.gui.VocabularyDetailScreen;
+
 import java.util.List;
 import java.util.Locale;
+
 import net.minecraft.network.chat.Component;
 
 import static io.github.piscescup.vocabularyspark.gui.widget.WidgetTheme.*;
@@ -53,7 +55,8 @@ public final class WordbookTabGUI extends WorkspaceTabGUI {
         page = workspace.wordbookPage(tab);
         var bb = getBounds();
         add(Labels.label(WordbookTitles.title(book), bb.x + 10, bb.y + 8, bb.width - 120, 20, ACCENT));
-        add(Buttons.button(text("export"), bb.endX - 105, bb.y + 8, 95, 22, !workspace.busy(),
+        add(Buttons.button(
+            text("export"), bb.endX - 105, bb.y + 8, 95, 22, !workspace.busy(),
             () -> actions.exportBook(book)
         ));
 
@@ -66,29 +69,38 @@ public final class WordbookTabGUI extends WorkspaceTabGUI {
         add(search);
 
         lookupStatus = Labels.label(text("wordbook_lookup_hint"), bb.x + 10, bb.y + 64, bb.width - 20, 18, MUTED);
-        lookupStatus.hoverableProperty().set(true, WordbookTabGUI.class);
-        lookupStatus.tooltipProperty().set(ignored -> TTooltip.of(lookupStatus.getText()), WordbookTabGUI.class);
+        lookupStatus.hoverableProperty()
+            .set(true, WordbookTabGUI.class);
+        lookupStatus.tooltipProperty()
+            .set(ignored -> TTooltip.of(lookupStatus.getText()), WordbookTabGUI.class);
         add(lookupStatus);
-        lookupRevision = workspace.dictionarySearch().revision();
+        lookupRevision = workspace.dictionarySearch()
+            .revision();
 
-        var wordPanel = new ScrollPanelWidget(bb.x + 10, bb.y + 88, bb.width - 20, Math.max(1, bb.height - 125), panel -> {
-                var pb = panel.getBounds();
-                int y = pb.y + 10;
-                if (matches.isEmpty()) {
-                    panel.add(Labels.paragraph(text("no_matching_words"), pb.x + 10, y, pb.width - 20, MUTED));
-                }
-                int start = page * PAGE_SIZE, end = Math.min(matches.size(), start + PAGE_SIZE);
-                for (int index = start; index < end; index++) {
-                    panel.add(Labels.label(Component.literal(Integer.toString(index + 1)), pb.x + 10, y, 35, 20, MUTED));
-                    String word = matches.get(index);
-                    var row = Buttons.button(Component.literal(word), pb.x + 50, y, pb.width - 60, 20, true,
-                        () -> lookupWord(word));
-                    row.getLabel().textAlignmentProperty().set(CompassDirection.WEST, WordbookTabGUI.class);
-                    row.tooltipProperty().set(ignored -> TTooltip.of(text("wordbook_lookup_word", word)), WordbookTabGUI.class);
-                    panel.add(row);
-                    y += 24;
-                }
+        var wordPanel = new ScrollPanelWidget(
+            bb.x + 10, bb.y + 88, bb.width - 20, Math.max(1, bb.height - 125), panel -> {
+            var pb = panel.getBounds();
+            int y = pb.y + 10;
+            if (matches.isEmpty()) {
+                panel.add(Labels.paragraph(text("no_matching_words"), pb.x + 10, y, pb.width - 20, MUTED));
             }
+            int start = page * PAGE_SIZE, end = Math.min(matches.size(), start + PAGE_SIZE);
+            for (int index = start; index < end; index++) {
+                panel.add(Labels.label(Component.literal(Integer.toString(index + 1)), pb.x + 10, y, 35, 20, MUTED));
+                String word = matches.get(index);
+                var row = Buttons.button(
+                    Component.literal(word), pb.x + 50, y, pb.width - 60, 20, true,
+                    () -> lookupWord(word)
+                );
+                row.getLabel()
+                    .textAlignmentProperty()
+                    .set(CompassDirection.WEST, WordbookTabGUI.class);
+                row.tooltipProperty()
+                    .set(ignored -> TTooltip.of(text("wordbook_lookup_word", word)), WordbookTabGUI.class);
+                panel.add(row);
+                y += 24;
+            }
+        }
         );
         add(wordPanel);
         list = wordPanel.getPanel();
@@ -121,7 +133,10 @@ public final class WordbookTabGUI extends WorkspaceTabGUI {
         dictionary.setInput(word);
         dictionary.submit(vocabulary -> {
             // Never reopen a screen after the player leaves this book or closes the workspace.
-            if (client.gui.screen() != origin || !workspace.currentTab().equals(tab)) return;
+            if (client.gui.screen() != origin || !workspace.currentTab()
+                .equals(tab)) {
+                return;
+            }
             var detail = new VocabularyDetailScreen(origin, vocabulary, workspace.pronunciationPlayer());
             client.gui.setScreen(detail.getAsScreen());
         });
@@ -130,7 +145,8 @@ public final class WordbookTabGUI extends WorkspaceTabGUI {
 
     @Override
     protected void tickCallback() {
-        if (lookupStarted && lookupStatus != null && lookupRevision != workspace.dictionarySearch().revision()) {
+        if (lookupStarted && lookupStatus != null && lookupRevision != workspace.dictionarySearch()
+            .revision()) {
             updateLookupStatus();
         }
     }
@@ -141,7 +157,8 @@ public final class WordbookTabGUI extends WorkspaceTabGUI {
         lookupStatus.setText(dictionary.message());
         boolean failed = dictionary.state() == DictionarySearch.State.FAILED
             || dictionary.state() == DictionarySearch.State.INVALID_INPUT;
-        lookupStatus.textColorProperty().set(failed ? 0xFFFF9999 : MUTED, WordbookTabGUI.class);
+        lookupStatus.textColorProperty()
+            .set(failed ? 0xFFFF9999 : MUTED, WordbookTabGUI.class);
     }
 
     private void updateMatches(String input) {

@@ -18,7 +18,9 @@ import static io.github.piscescup.vocabularyspark.utils.ComponentUtils.text;
 import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_KP_ENTER;
 import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_RETURN;
 
-/** Query controls and one clickable word summary; all senses are shown in the detail GUI. */
+/**
+ * Query controls and one clickable word summary; all senses are shown in the detail GUI.
+ */
 public final class SearchTabGUI extends WorkspaceTabGUI {
     private final DictionarySearch search;
     private TextFieldWidget input;
@@ -37,15 +39,20 @@ public final class SearchTabGUI extends WorkspaceTabGUI {
         add(Labels.label(text("search"), bb.x + 10, bb.y + 8, bb.width - 20, 20, ACCENT));
 
         input = new TextFieldWidget();
-        input.placeholderProperty().set(text("search_placeholder"), SearchTabGUI.class);
-        input.textProperty().set(search.input(), SearchTabGUI.class);
-        input.textProperty().addChangeListener((property, oldValue, newValue) -> search.setInput(newValue));
+        input.placeholderProperty()
+            .set(text("search_placeholder"), SearchTabGUI.class);
+        input.textProperty()
+            .set(search.input(), SearchTabGUI.class);
+        input.textProperty()
+            .addChangeListener((property, oldValue, newValue) -> search.setInput(newValue));
         input.setBounds(bb.x + 10, bb.y + 35, Math.max(1, bb.width - 100), 22);
         add(input);
         add(Buttons.button(text("search_submit"), bb.endX - 80, bb.y + 35, 70, 22, true, search::submit));
 
-        var resultPanel = new ScrollPanelWidget(bb.x + 10, bb.y + 65, bb.width - 20,
-            Math.max(1, bb.height - 75), this::populateResults);
+        var resultPanel = new ScrollPanelWidget(
+            bb.x + 10, bb.y + 65, bb.width - 20,
+            Math.max(1, bb.height - 75), this::populateResults
+        );
         add(resultPanel);
         results = resultPanel.getPanel();
     }
@@ -54,7 +61,8 @@ public final class SearchTabGUI extends WorkspaceTabGUI {
     protected void tickCallback() {
         if (results != null && revision != search.revision()) {
             revision = search.revision();
-            results.scrollAmountProperty().set(com.thecsdev.common.math.Point2d.ZERO, SearchTabGUI.class);
+            results.scrollAmountProperty()
+                .set(com.thecsdev.common.math.Point2d.ZERO, SearchTabGUI.class);
             results.clearAndInit();
         }
     }
@@ -65,8 +73,10 @@ public final class SearchTabGUI extends WorkspaceTabGUI {
         if (phase == TInputContext.InputDiscoveryPhase.PREEMPT
             && context.getInputType() == TInputContext.InputType.KEY_PRESS
             && input != null && input.isFocused()
-            && (Integer.valueOf(SDL_SCANCODE_RETURN).equals(context.getScanCode())
-                || Integer.valueOf(SDL_SCANCODE_KP_ENTER).equals(context.getScanCode()))) {
+            && (Integer.valueOf(SDL_SCANCODE_RETURN)
+            .equals(context.getScanCode())
+            || Integer.valueOf(SDL_SCANCODE_KP_ENTER)
+            .equals(context.getScanCode()))) {
             search.submit();
             return true;
         }
@@ -81,26 +91,37 @@ public final class SearchTabGUI extends WorkspaceTabGUI {
         var messageLabel = Labels.paragraph(search.message(), x, y, width, color);
         panel.add(messageLabel);
         y = messageLabel.getBounds().endY + 12;
-        var vocabulary = search.result().orElse(null);
+        var vocabulary = search.result()
+            .orElse(null);
         if (vocabulary == null) return;
 
         int wordWidth = VocabularyEntryElement.wordWidth(width);
         int posWidth = VocabularyEntryElement.posWidth(width);
         panel.add(Labels.label(text("search_word"), x + 8, y, wordWidth - 12, 18, ACCENT));
         panel.add(Labels.label(text("search_pos"), x + wordWidth, y, posWidth - 8, 18, ACCENT));
-        panel.add(Labels.label(text("search_translation"), x + wordWidth + posWidth, y,
-            width - wordWidth - posWidth - 8, 18, ACCENT));
+        panel.add(Labels.label(
+            text("search_translation"), x + wordWidth + posWidth, y,
+            width - wordWidth - posWidth - 8, 18, ACCENT
+        ));
         y += 23;
-        var summary = vocabulary.translations().stream()
-            .filter(sense -> !sense.translation().getString().isBlank() || !sense.englishDefinition().getString().isBlank())
-            .findFirst().orElse(null);
+        var summary = vocabulary.translations()
+            .stream()
+            .filter(sense -> !sense.translation()
+                .getString()
+                .isBlank() || !sense.englishDefinition()
+                .getString()
+                .isBlank())
+            .findFirst()
+            .orElse(null);
         if (summary == null) return;
-        var row = new VocabularyEntryElement(vocabulary, summary, () -> {
+        var row = new VocabularyEntryElement(
+            vocabulary, summary, () -> {
             var client = getClient();
             if (client == null) return;
             var detail = new VocabularyDetailScreen(client.gui.screen(), vocabulary, workspace.pronunciationPlayer());
             client.gui.setScreen(detail.getAsScreen());
-        });
+        }
+        );
         row.setBoundsToFitContent(x, y, width);
         panel.add(row);
     }

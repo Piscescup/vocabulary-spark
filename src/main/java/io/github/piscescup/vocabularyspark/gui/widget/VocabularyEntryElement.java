@@ -20,9 +20,12 @@ public final class VocabularyEntryElement extends TClickableWidget {
 
     public VocabularyEntryElement(Word vocabulary, TranslationEntry sense, Runnable openDetails) {
         word = new TLabelElement(DictionaryTextStyles.headwordFormat(vocabulary.word()));
-        String pos = sense.pos().getName();
+        String pos = sense.pos()
+            .getName();
         partOfSpeech = new TLabelElement(DictionaryTextStyles.partOfSpeechFormat(pos));
-        translation = new TLabelElement(sense.translation().getString().isBlank()
+        translation = new TLabelElement(sense.translation()
+            .getString()
+            .isBlank()
             ? sense.englishDefinition() :
             sense.translation()
         );

@@ -18,12 +18,15 @@ import java.util.Locale;
 
 import static io.github.piscescup.vocabularyspark.VocabularySparkModReferences.GSON;
 
-/** One portable wordbook model for TXT, JSON and SQLite import/export. */
+/**
+ * One portable wordbook model for TXT, JSON and SQLite import/export.
+ */
 public final class WordbookFiles {
 
     private static final long MAX_BYTES = 16 * 1024 * 1024;
 
-    private WordbookFiles() {}
+    private WordbookFiles() {
+    }
 
     public static Wordbook read(Path path) throws IOException {
         if (Files.size(path) > MAX_BYTES) throw new IOException("Wordbook exceeds 16 MiB");
@@ -31,13 +34,18 @@ public final class WordbookFiles {
         String text = Files.readString(path, StandardCharsets.UTF_8);
         if (text.startsWith("\uFEFF")) text = text.substring(1);
         return switch (extension(path)) {
-            case "txt" -> Wordbook.fromText(baseName(path), text.lines().toList());
+            case "txt" -> Wordbook.fromText(
+                baseName(path), text.lines()
+                    .toList()
+            );
             case "json" -> readJson(text);
             default -> throw new IOException("Choose a .json, .txt or .sqlite wordbook");
         };
     }
 
-    /** Reads a bounded UTF-8 JSON resource; the caller closes the stream. */
+    /**
+     * Reads a bounded UTF-8 JSON resource; the caller closes the stream.
+     */
     static Wordbook readJson(InputStream stream) throws IOException {
         byte[] bytes = stream.readNBytes((int) MAX_BYTES + 1);
         if (bytes.length > MAX_BYTES) throw new IOException("Wordbook exceeds 16 MiB");
@@ -52,15 +60,18 @@ public final class WordbookFiles {
             if (!root.isJsonObject()) throw new IllegalArgumentException("Expected a JSON object");
             JsonObject object = root.getAsJsonObject();
             JsonElement version = object.get("formatVersion");
-            if (version == null || !version.isJsonPrimitive() || !version.getAsJsonPrimitive().isNumber()
-                || !version.getAsBigDecimal().equals(java.math.BigDecimal.ONE)) {
+            if (version == null || !version.isJsonPrimitive() || !version.getAsJsonPrimitive()
+                .isNumber()
+                || !version.getAsBigDecimal()
+                .equals(java.math.BigDecimal.ONE)) {
                 throw new IllegalArgumentException("Expected formatVersion: 1");
             }
             JsonElement array = object.get("words");
             if (array == null || !array.isJsonArray()) throw new IllegalArgumentException("Expected a words array");
             List<String> words = new ArrayList<>();
             for (JsonElement entry : array.getAsJsonArray()) {
-                if (!entry.isJsonPrimitive() || !entry.getAsJsonPrimitive().isString()) {
+                if (!entry.isJsonPrimitive() || !entry.getAsJsonPrimitive()
+                    .isString()) {
                     throw new IllegalArgumentException("Every words entry must be a string");
                 }
                 words.add(entry.getAsString());
@@ -73,13 +84,16 @@ public final class WordbookFiles {
 
     private static String requiredString(JsonObject object, String key) {
         JsonElement entry = object.get(key);
-        if (entry == null || !entry.isJsonPrimitive() || !entry.getAsJsonPrimitive().isString()) {
+        if (entry == null || !entry.isJsonPrimitive() || !entry.getAsJsonPrimitive()
+            .isString()) {
             throw new IllegalArgumentException("Expected a string for " + key);
         }
         return entry.getAsString();
     }
 
-    /** Existing files are only replaced after the caller has obtained explicit confirmation. */
+    /**
+     * Existing files are only replaced after the caller has obtained explicit confirmation.
+     */
     public static void write(Path destination, Wordbook book, boolean replace) throws IOException {
         String format = extension(destination);
         String content = switch (format) {
@@ -88,7 +102,8 @@ public final class WordbookFiles {
             case "sqlite" -> null;
             default -> throw new IOException("Export requires a .json, .txt or .sqlite extension");
         };
-        Path target = destination.toAbsolutePath().normalize();
+        Path target = destination.toAbsolutePath()
+            .normalize();
         if (!replace && Files.exists(target)) throw new java.nio.file.FileAlreadyExistsException(target.toString());
         if (format.equals("sqlite") && (Files.exists(target.resolveSibling(target.getFileName() + "-wal"))
             || Files.exists(target.resolveSibling(target.getFileName() + "-shm")))) {
@@ -96,8 +111,11 @@ public final class WordbookFiles {
         }
         Path temporary = Files.createTempFile(target.getParent(), ".vocabulary-spark-", ".tmp");
         try {
-            if (format.equals("sqlite")) WordbookDatabase.writePortable(temporary, book);
-            else Files.writeString(temporary, content, StandardCharsets.UTF_8);
+            if (format.equals("sqlite")) {
+                WordbookDatabase.writePortable(temporary, book);
+            } else {
+                Files.writeString(temporary, content, StandardCharsets.UTF_8);
+            }
             if (replace) {
                 try {
                     Files.move(temporary, target, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
@@ -120,13 +138,16 @@ public final class WordbookFiles {
     }
 
     private static String extension(Path path) {
-        String filename = path.getFileName().toString();
+        String filename = path.getFileName()
+            .toString();
         int dot = filename.lastIndexOf('.');
-        return dot < 0 ? "" : filename.substring(dot + 1).toLowerCase(Locale.ROOT);
+        return dot < 0 ? "" : filename.substring(dot + 1)
+            .toLowerCase(Locale.ROOT);
     }
 
     private static String baseName(Path path) {
-        String filename = path.getFileName().toString();
+        String filename = path.getFileName()
+            .toString();
         int dot = filename.lastIndexOf('.');
         return dot > 0 ? filename.substring(0, dot) : filename;
     }

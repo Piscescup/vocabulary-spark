@@ -25,7 +25,9 @@ import java.util.HashSet;
 import static io.github.piscescup.vocabularyspark.gui.widget.DictionaryTextStyles.*;
 import static io.github.piscescup.vocabularyspark.utils.ComponentUtils.text;
 
-/** Responsive study dashboard using only TCDCommons controls and the existing dictionary display API. */
+/**
+ * Responsive study dashboard using only TCDCommons controls and the existing dictionary display API.
+ */
 public final class DailyStudyTabGUI extends WorkspaceTabGUI {
     private final DailyStudy study;
     private long revision;
@@ -45,29 +47,41 @@ public final class DailyStudyTabGUI extends WorkspaceTabGUI {
     protected void initCallback() {
         revision = study.revision();
         var bb = getBounds();
-        add(Labels.label(text("study"), bb.x + 10, bb.y + 5, Math.max(1, bb.width - 206), 18, DICTIONARY_WORD_COLOR, false));
-        add(button(text("today_words"), bb.endX - 178, bb.y + 5, 92, 18,
-            !study.busy() && study.snapshot().isPresent(), () -> {
+        add(Labels.label(
+            text("study"), bb.x + 10, bb.y + 5, Math.max(1, bb.width - 206), 18, DICTIONARY_WORD_COLOR, false));
+        add(button(
+            text("today_words"), bb.endX - 178, bb.y + 5, 92, 18,
+            !study.busy() && study.snapshot()
+                .isPresent(), () -> {
                 var client = getClient();
-                if (client != null) client.gui.setScreen(new DailyWordsScreen(client.gui.screen(), workspace).getAsScreen());
-            }));
+                if (client != null) {
+                    client.gui.setScreen(new DailyWordsScreen(client.gui.screen(), workspace).getAsScreen());
+                }
+            }
+        ));
         add(button(text("study_refresh"), bb.endX - 78, bb.y + 5, 68, 18, !study.busy(), study::refresh));
         int top = bb.y + 28, height = Math.max(1, bb.height - 33);
         if (bb.width >= 480) {
             int sidebar = Math.clamp(bb.width / 4, 142, 190);
             settings(bb.x + 8, top, sidebar, height, false);
-            add(new ScrollPanelWidget(bb.x + sidebar + 16, top, bb.width - sidebar - 24, height,
-                panel -> card(panel, panel.getBounds().x + 10, panel.getBounds().y + 8, panel.getBounds().width - 20)));
+            add(new ScrollPanelWidget(
+                bb.x + sidebar + 16, top, bb.width - sidebar - 24, height,
+                panel -> card(panel, panel.getBounds().x + 10, panel.getBounds().y + 8, panel.getBounds().width - 20)
+            ));
         } else {
             int settingsHeight = Math.min(86, Math.max(1, height - 35));
             settings(bb.x + 8, top, bb.width - 16, settingsHeight, true);
-            add(new ScrollPanelWidget(bb.x + 8, top + settingsHeight + 6, bb.width - 16,
+            add(new ScrollPanelWidget(
+                bb.x + 8, top + settingsHeight + 6, bb.width - 16,
                 Math.max(1, height - settingsHeight - 6), panel ->
-                    card(panel, panel.getBounds().x + 8, panel.getBounds().y + 8, panel.getBounds().width - 16)));
+                card(panel, panel.getBounds().x + 8, panel.getBounds().y + 8, panel.getBounds().width - 16)
+            ));
         }
     }
 
-    /** Book rows scroll independently; the goal field and save action are direct, fixed children. */
+    /**
+     * Book rows scroll independently; the goal field and save action are direct, fixed children.
+     */
     private void settings(int x, int y, int width, int height, boolean compact) {
         var background = new TFillColorElement.Flat(0x44000000, 0x99000000);
         background.setBounds(x, y, Math.max(1, width), Math.max(1, height));
@@ -76,15 +90,19 @@ public final class DailyStudyTabGUI extends WorkspaceTabGUI {
         int listY = paragraph(this, text("study_choose_book"), innerX, y + 6, innerWidth, DICTIONARY_WORD_COLOR) + 4;
         int footerHeight = compact ? 29 : 65;
         int listHeight = Math.max(18, height - (listY - y) - footerHeight - 8);
-        add(new ScrollPanelWidget(innerX, listY, innerWidth, listHeight, panel ->
-            bookButtons(panel, panel.getBounds().x + 4, panel.getBounds().y + 4, panel.getBounds().width - 8)));
+        add(new ScrollPanelWidget(
+            innerX, listY, innerWidth, listHeight, panel ->
+            bookButtons(panel, panel.getBounds().x + 4, panel.getBounds().y + 4, panel.getBounds().width - 8)
+        ));
         int goalY = listY + listHeight + 6;
         int fieldX = innerX, fieldWidth;
         int saveWidth = compact ? 94 : Math.max(70, innerWidth - 44);
         if (compact) {
             int labelWidth = Math.max(70, innerWidth - saveWidth - 48);
-            var label = Labels.label(text("study_daily_goal"), innerX, goalY, labelWidth, 21, DICTIONARY_WORD_COLOR, false);
-            label.textScaleProperty().set(0.85, DailyStudyTabGUI.class);
+            var label = Labels.label(
+                text("study_daily_goal"), innerX, goalY, labelWidth, 21, DICTIONARY_WORD_COLOR, false);
+            label.textScaleProperty()
+                .set(0.85, DailyStudyTabGUI.class);
             add(label);
             fieldX += labelWidth + 4;
             fieldWidth = Math.max(1, innerWidth - labelWidth - saveWidth - 8);
@@ -93,44 +111,66 @@ public final class DailyStudyTabGUI extends WorkspaceTabGUI {
             fieldWidth = Math.max(1, innerWidth - saveWidth - 4);
         }
         var goal = new TextFieldWidget();
-        goal.textProperty().set(study.goalDraft(), DailyStudyTabGUI.class);
-        goal.textProperty().addChangeListener((property, previous, current) -> study.setGoalDraft(current));
-        goal.enabledProperty().set(!study.busy(), DailyStudyTabGUI.class);
-        goal.tooltipProperty().set(ignored -> studyRules(), DailyStudyTabGUI.class);
+        goal.textProperty()
+            .set(study.goalDraft(), DailyStudyTabGUI.class);
+        goal.textProperty()
+            .addChangeListener((property, previous, current) -> study.setGoalDraft(current));
+        goal.enabledProperty()
+            .set(!study.busy(), DailyStudyTabGUI.class);
+        goal.tooltipProperty()
+            .set(ignored -> studyRules(), DailyStudyTabGUI.class);
         goal.setBounds(fieldX, goalY, fieldWidth, 21);
         add(goal);
-        var save = button(text("study_save_goal"), fieldX + fieldWidth + 4, goalY, saveWidth, 21,
-            !study.busy() && study.selectedBookId() != null, study::saveGoal);
-        save.tooltipProperty().set(ignored -> studyRules(), DailyStudyTabGUI.class);
+        var save = button(
+            text("study_save_goal"), fieldX + fieldWidth + 4, goalY, saveWidth, 21,
+            !study.busy() && study.selectedBookId() != null, study::saveGoal
+        );
+        save.tooltipProperty()
+            .set(ignored -> studyRules(), DailyStudyTabGUI.class);
         add(save);
         if (!compact) {
-            var rules = Labels.paragraph(text("study_rules"), innerX, goalY + 27, innerWidth, DICTIONARY_MUTED_COLOR, 0.85, false);
-            rules.hoverableProperty().set(true, DailyStudyTabGUI.class);
-            rules.tooltipProperty().set(ignored -> studyRules(), DailyStudyTabGUI.class);
+            var rules = Labels.paragraph(
+                text("study_rules"), innerX, goalY + 27, innerWidth, DICTIONARY_MUTED_COLOR, 0.85, false);
+            rules.hoverableProperty()
+                .set(true, DailyStudyTabGUI.class);
+            rules.tooltipProperty()
+                .set(ignored -> studyRules(), DailyStudyTabGUI.class);
             add(rules);
         }
     }
 
     private static TTooltip studyRules() {
-        return TTooltip.of(text("study_goal_hint").append("\n\n").append(text("study_schedule_hint")));
+        return TTooltip.of(text("study_goal_hint").append("\n\n")
+            .append(text("study_schedule_hint")));
     }
 
     private void bookButtons(TPanelElement panel, int x, int y, int width) {
         width = Math.max(1, width);
-        if (workspace.books().isEmpty()) {
-            y = paragraph(panel, text(workspace.busy() ? "loading" : "no_books"), x, y, width, DICTIONARY_MUTED_COLOR) + 6;
+        if (workspace.books()
+            .isEmpty()) {
+            y = paragraph(
+                panel, text(workspace.busy() ? "loading" : "no_books"), x, y, width, DICTIONARY_MUTED_COLOR) + 6;
             panel.add(button(text("import"), x, y, width, 21, !workspace.busy(), actions::importBook));
             return;
         }
         for (var book : workspace.books()) {
-            boolean selected = book.id().equals(study.selectedBookId());
-            var choose = button(WordbookTitles.title(book), x, y, width, 21,
-                !study.busy(), () -> study.select(book));
-            choose.getLabel().textAlignmentProperty().set(CompassDirection.WEST, DailyStudyTabGUI.class);
+            boolean selected = book.id()
+                .equals(study.selectedBookId());
+            var choose = button(
+                WordbookTitles.title(book), x, y, width, 21,
+                !study.busy(), () -> study.select(book)
+            );
+            choose.getLabel()
+                .textAlignmentProperty()
+                .set(CompassDirection.WEST, DailyStudyTabGUI.class);
             if (selected) {
-                choose.backgroundColorProperty().set(DICTIONARY_BADGE_BACKGROUND, DailyStudyTabGUI.class);
-                choose.outlineColorProperty().set(DICTIONARY_TAB_COLOR, DailyStudyTabGUI.class);
-                choose.getLabel().textColorProperty().set(DICTIONARY_WORD_COLOR, DailyStudyTabGUI.class);
+                choose.backgroundColorProperty()
+                    .set(DICTIONARY_BADGE_BACKGROUND, DailyStudyTabGUI.class);
+                choose.outlineColorProperty()
+                    .set(DICTIONARY_TAB_COLOR, DailyStudyTabGUI.class);
+                choose.getLabel()
+                    .textColorProperty()
+                    .set(DICTIONARY_WORD_COLOR, DailyStudyTabGUI.class);
             }
             panel.add(choose);
             y += 25;
@@ -139,86 +179,136 @@ public final class DailyStudyTabGUI extends WorkspaceTabGUI {
 
     private void card(TPanelElement panel, int x, int y, int width) {
         width = Math.max(1, width);
-        if (!study.error().isEmpty()) {
-            var message = study.error().equals("invalid_goal") ? text("study_invalid_goal") : text("study_error", study.error());
+        if (!study.error()
+            .isEmpty()) {
+            var message = study.error()
+                .equals("invalid_goal") ? text("study_invalid_goal") : text("study_error", study.error());
             y = paragraph(panel, message, x, y, width, 0xFFFF9999) + 8;
         }
         if (study.busy()) {
             paragraph(panel, text("study_saving"), x, y, width, DICTIONARY_MUTED_COLOR);
             return;
         }
-        var snapshot = study.snapshot().orElse(null);
+        var snapshot = study.snapshot()
+            .orElse(null);
         if (snapshot == null) {
             paragraph(panel, text("study_start_hint"), x, y, width, DICTIONARY_MUTED_COLOR);
             return;
         }
-        var book = workspace.book(study.selectedBookId()).orElse(null);
+        var book = workspace.book(study.selectedBookId())
+            .orElse(null);
         if (book != null) y = paragraph(panel, WordbookTitles.title(book), x, y, width, DICTIONARY_WORD_COLOR) + 4;
-        y = paragraph(panel, text("study_today", snapshot.day().toString(), snapshot.completed(), snapshot.total()),
-            x, y, width, DICTIONARY_TEXT_COLOR) + 4;
+        y = paragraph(
+            panel, text(
+                "study_today", snapshot.day()
+                    .toString(), snapshot.completed(), snapshot.total()
+            ),
+            x, y, width, DICTIONARY_TEXT_COLOR
+        ) + 4;
         var track = new TFillColorElement.Flat(0x553B617B, 0);
-        track.setBounds(x, y, width, 3); panel.add(track);
+        track.setBounds(x, y, width, 3);
+        panel.add(track);
         if (snapshot.total() > 0 && snapshot.completed() > 0) {
             var fill = new TFillColorElement.Flat(DICTIONARY_TAB_COLOR, 0);
-            fill.setBounds(x, y, Math.max(1, width * snapshot.completed() / snapshot.total()), 3); panel.add(fill);
+            fill.setBounds(x, y, Math.max(1, width * snapshot.completed() / snapshot.total()), 3);
+            panel.add(fill);
         }
         y += 8;
-        y = paragraph(panel, text("study_counts", snapshot.newCompleted(), snapshot.reviewCompleted(), snapshot.learned()),
-            x, y, width, DICTIONARY_MUTED_COLOR) + 12;
+        y = paragraph(
+            panel, text("study_counts", snapshot.newCompleted(), snapshot.reviewCompleted(), snapshot.learned()),
+            x, y, width, DICTIONARY_MUTED_COLOR
+        ) + 12;
         if (snapshot.current() == null) {
-            y = paragraph(panel, text(snapshot.total() == 0 ? "study_nothing_due" : "study_complete"),
-                x, y, width, DICTIONARY_WORD_COLOR) + 6;
+            y = paragraph(
+                panel, text(snapshot.total() == 0 ? "study_nothing_due" : "study_complete"),
+                x, y, width, DICTIONARY_WORD_COLOR
+            ) + 6;
             paragraph(panel, text("study_complete_hint"), x, y, width, DICTIONARY_MUTED_COLOR);
             return;
         }
-        y = paragraph(panel, text(snapshot.current().review() ? "study_review_card" : "study_new_card"),
-            x, y, width, DICTIONARY_MUTED_COLOR) + 6;
-        var word = Labels.paragraph(Component.literal(snapshot.current().word()).withStyle(ChatFormatting.BOLD),
-            x, y, width, DICTIONARY_WORD_COLOR, 1.4, false);
-        panel.add(word); y = word.getBounds().endY + 8;
+        y = paragraph(
+            panel, text(snapshot.current()
+                .review() ? "study_review_card" : "study_new_card"),
+            x, y, width, DICTIONARY_MUTED_COLOR
+        ) + 6;
+        var word = Labels.paragraph(
+            Component.literal(snapshot.current()
+                    .word())
+                .withStyle(ChatFormatting.BOLD),
+            x, y, width, DICTIONARY_WORD_COLOR, 1.4, false
+        );
+        panel.add(word);
+        y = word.getBounds().endY + 8;
         int gradeWidth = Math.max(1, (width - 8) / 3);
-        panel.add(button(text("study_familiar"), x, y, gradeWidth, 22, true, () -> study.grade(StudyStore.Grade.FAMILIAR)));
-        panel.add(button(text("study_fuzzy"), x + gradeWidth + 4, y, gradeWidth, 22, true, () -> study.grade(StudyStore.Grade.FUZZY)));
-        panel.add(button(text("study_unfamiliar"), x + (gradeWidth + 4) * 2, y, gradeWidth, 22, true, () -> study.grade(StudyStore.Grade.UNFAMILIAR)));
+        panel.add(
+            button(text("study_familiar"), x, y, gradeWidth, 22, true, () -> study.grade(StudyStore.Grade.FAMILIAR)));
+        panel.add(button(
+            text("study_fuzzy"), x + gradeWidth + 4, y, gradeWidth, 22, true,
+            () -> study.grade(StudyStore.Grade.FUZZY)
+        ));
+        panel.add(button(
+            text("study_unfamiliar"), x + (gradeWidth + 4) * 2, y, gradeWidth, 22, true,
+            () -> study.grade(StudyStore.Grade.UNFAMILIAR)
+        ));
         y += 29;
         if (!study.revealed()) {
             y = paragraph(panel, text("study_recall_hint"), x, y, width, DICTIONARY_MUTED_COLOR) + 7;
             panel.add(button(text("study_reveal"), x, y, width, 22, true, study::reveal));
             return;
         }
-        var definition = study.definition().orElse(null);
+        var definition = study.definition()
+            .orElse(null);
         if (study.definitionLoading()) {
             paragraph(panel, text("study_definition_loading"), x, y, width, DICTIONARY_MUTED_COLOR);
             return;
         }
         if (definition == null) {
-            y = paragraph(panel, text(study.lookupError().isEmpty() ? "study_no_definition" : "study_lookup_failed"),
-                x, y, width, DICTIONARY_MUTED_COLOR) + 6;
+            y = paragraph(
+                panel, text(study.lookupError()
+                    .isEmpty() ? "study_no_definition" : "study_lookup_failed"),
+                x, y, width, DICTIONARY_MUTED_COLOR
+            ) + 6;
             panel.add(button(text("study_retry_lookup"), x, y, width, 20, true, study::lookupDefinition));
             return;
         }
         var pronunciations = new HashSet<String>();
         for (var pronunciation : definition.pronunciations()) {
-            String identity = pronunciation.area().getString() + "\n" + pronunciation.phoneticSymbol().getString();
+            String identity = pronunciation.area()
+                .getString() + "\n" + pronunciation.phoneticSymbol()
+                .getString();
             if (!pronunciations.add(identity)) continue;
             var audio = new PronunciationWidget(pronunciation, workspace.pronunciationPlayer());
             audio.setBoundsToFitContent(x, y, width);
-            panel.add(audio); y = audio.getBounds().endY + 3;
+            panel.add(audio);
+            y = audio.getBounds().endY + 3;
         }
-        panel.add(button(text("study_full_entry"), x, y, width, 20, true, () -> {
-            var client = getClient();
-            if (client != null) client.gui.setScreen(new VocabularyDetailScreen(client.gui.screen(), definition,
-                workspace.pronunciationPlayer()).getAsScreen());
-        }));
+        panel.add(button(
+            text("study_full_entry"), x, y, width, 20, true, () -> {
+                var client = getClient();
+                if (client != null) {
+                    client.gui.setScreen(new VocabularyDetailScreen(
+                        client.gui.screen(), definition,
+                        workspace.pronunciationPlayer()
+                    ).getAsScreen());
+                }
+            }
+        ));
         y += 27;
         int number = 0;
         for (var sense : definition.translations()) {
-            var meaning = Component.literal((++number) + ". " + sense.pos().getName() + " ")
+            var meaning = Component.literal((++number) + ". " + sense.pos()
+                    .getName() + " ")
                 .withStyle(style -> style.withColor(DICTIONARY_WORD_COLOR & 0xFFFFFF))
-                .append(sense.translation().copy());
+                .append(sense.translation()
+                    .copy());
             y = paragraph(panel, meaning, x, y, width, DICTIONARY_TRANSLATION_COLOR) + 3;
-            if (!sense.englishDefinition().getString().isBlank()) {
-                y = paragraph(panel, sense.englishDefinition().copy(), x, y, width, DICTIONARY_MUTED_COLOR) + 6;
+            if (!sense.englishDefinition()
+                .getString()
+                .isBlank()) {
+                y = paragraph(
+                    panel, sense.englishDefinition()
+                        .copy(), x, y, width, DICTIONARY_MUTED_COLOR
+                ) + 6;
             }
         }
     }
@@ -233,8 +323,12 @@ public final class DailyStudyTabGUI extends WorkspaceTabGUI {
         Component text, int x, int y, int width, int height, boolean enabled, Runnable action
     ) {
         var button = Buttons.button(text, x, y, width, height, enabled, action);
-        button.getLabel().textScaleProperty().set(0.85, DailyStudyTabGUI.class);
-        button.getLabel().dropShadowProperty().set(false, DailyStudyTabGUI.class);
+        button.getLabel()
+            .textScaleProperty()
+            .set(0.85, DailyStudyTabGUI.class);
+        button.getLabel()
+            .dropShadowProperty()
+            .set(false, DailyStudyTabGUI.class);
         return button;
     }
 }

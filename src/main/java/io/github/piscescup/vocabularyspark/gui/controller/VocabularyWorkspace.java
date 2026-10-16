@@ -52,13 +52,18 @@ public final class VocabularyWorkspace implements AutoCloseable {
     private Consumer<Throwable> errorHandler = failure -> {
     };
 
-    public VocabularyWorkspace(WordbookLibrary library, Executor clientExecutor, PronunciationPlayer pronunciationPlayer,
-                               StudyFiles studyFiles) {
+    public VocabularyWorkspace(
+        WordbookLibrary library, Executor clientExecutor, PronunciationPlayer pronunciationPlayer,
+        StudyFiles studyFiles
+    ) {
         this.library = library;
-        this.dailyDirectory = studyFiles.directory().getParent();
+        this.dailyDirectory = studyFiles.directory()
+            .getParent();
         this.clientExecutor = clientExecutor;
         this.pronunciationPlayer = pronunciationPlayer;
-        var dictionary = new DictionaryClient(library.directory().getParent().resolve("dictionary.json"));
+        var dictionary = new DictionaryClient(library.directory()
+            .getParent()
+            .resolve("dictionary.json"));
         this.dictionarySearch = new DictionarySearch(dictionary, clientExecutor);
         this.dailyStudy = new DailyStudy(studyFiles, dictionary::lookup, clientExecutor);
     }
@@ -67,7 +72,9 @@ public final class VocabularyWorkspace implements AutoCloseable {
         return dictionarySearch;
     }
 
-    public DailyStudy dailyStudy() { return dailyStudy; }
+    public DailyStudy dailyStudy() {
+        return dailyStudy;
+    }
 
     public PronunciationPlayer pronunciationPlayer() {
         return pronunciationPlayer;
@@ -117,7 +124,9 @@ public final class VocabularyWorkspace implements AutoCloseable {
         filters.put(tab, query);
     }
 
-    /** Keeps the current wordbook page when a dictionary-detail screen is opened and closed. */
+    /**
+     * Keeps the current wordbook page when a dictionary-detail screen is opened and closed.
+     */
     public int wordbookPage(WorkspaceTab.Book tab) {
         return wordbookPages.getOrDefault(tab, 0);
     }
@@ -163,8 +172,9 @@ public final class VocabularyWorkspace implements AutoCloseable {
                 if (!result.failures()
                     .isEmpty()) {
                     errorHandler.accept(new java.io.IOException(String.join("\n", result.failures())));
-                    status = text("load_partial", result.failures()
-                        .size()
+                    status = text(
+                        "load_partial", result.failures()
+                            .size()
                     );
                 }
             }
@@ -205,8 +215,9 @@ public final class VocabularyWorkspace implements AutoCloseable {
                 books.put(saved.id(), saved);
                 dailyStudy.updateBook(saved);
                 openBook(saved);
-                status = text("imported", WordbookTitles.title(saved), saved.words()
-                    .size()
+                status = text(
+                    "imported", WordbookTitles.title(saved), saved.words()
+                        .size()
                 );
             }
         );
@@ -215,15 +226,18 @@ public final class VocabularyWorkspace implements AutoCloseable {
     public void export(Path target, Wordbook book, boolean replace) {
         runIo(
             "exporting", () -> {
-                Path destination = target.toAbsolutePath().normalize();
+                Path destination = target.toAbsolutePath()
+                    .normalize();
                 if (destination.startsWith(library.directory()) || destination.startsWith(dailyDirectory)) {
-                    throw new java.io.IOException("Choose an export location outside the managed wordbooks and daily directories");
+                    throw new java.io.IOException(
+                        "Choose an export location outside the managed wordbooks and daily directories");
                 }
                 WordbookFiles.write(target, book, replace);
                 return target;
             },
-            path -> status = text("exported", path.getFileName()
-                .toString()
+            path -> status = text(
+                "exported", path.getFileName()
+                    .toString()
             )
         );
     }

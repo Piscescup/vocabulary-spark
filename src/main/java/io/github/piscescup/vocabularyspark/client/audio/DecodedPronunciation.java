@@ -38,7 +38,7 @@ final class DecodedPronunciation {
      * @param mp3 the downloaded MP3 bytes
      * @return the decoded samples and their format
      * @throws IOException if the clip cannot be decoded, changes format or
-     *         exceeds the decoded size limit
+     *                     exceeds the decoded size limit
      */
     static DecodedPronunciation decode(byte[] mp3) throws IOException {
         var bitstream = new Bitstream(new ByteArrayInputStream(mp3));
@@ -48,11 +48,16 @@ final class DecodedPronunciation {
             AudioFormat format = null;
             for (var header = bitstream.readFrame(); header != null; header = bitstream.readFrame()) {
                 try {
-                    if (Thread.currentThread().isInterrupted()) throw new IOException("Audio decoding interrupted");
+                    if (Thread.currentThread()
+                        .isInterrupted()) {
+                        throw new IOException("Audio decoding interrupted");
+                    }
                     var buffer = (SampleBuffer) decoder.decodeFrame(header, bitstream);
                     if (format == null) {
-                        format = new AudioFormat(buffer.getSampleFrequency(), 16,
-                            buffer.getChannelCount(), true, BIG_ENDIAN);
+                        format = new AudioFormat(
+                            buffer.getSampleFrequency(), 16,
+                            buffer.getChannelCount(), true, BIG_ENDIAN
+                        );
                     } else if (format.getSampleRate() != buffer.getSampleFrequency()
                         || format.getChannels() != buffer.getChannelCount()) {
                         throw new IOException("Pronunciation changes audio format between frames");
@@ -117,8 +122,10 @@ final class DecodedPronunciation {
                 if (offset == samples.length) return null;
                 int frameSize = format.getFrameSize();
                 int length = Math.min(samples.length - offset, Math.max(frameSize, size - size % frameSize));
-                var result = ByteBuffer.allocateDirect(length).order(ByteOrder.nativeOrder());
-                result.put(samples, offset, length).flip();
+                var result = ByteBuffer.allocateDirect(length)
+                    .order(ByteOrder.nativeOrder());
+                result.put(samples, offset, length)
+                    .flip();
                 offset += length;
                 return result;
             }

@@ -15,7 +15,9 @@ import static org.lwjgl.sdl.SDLKeycode.SDL_KMOD_SHIFT;
 import static org.lwjgl.sdl.SDLMouse.SDL_BUTTON_LEFT;
 import static org.lwjgl.sdl.SDLScancode.*;
 
-/** Single-line TCDCommons editor with a caret, selection and clipboard shortcuts. */
+/**
+ * Single-line TCDCommons editor with a caret, selection and clipboard shortcuts.
+ */
 public final class TextFieldWidget extends TClickableWidget {
     private final NotNullProperty<String> text = new NotNullProperty<>("");
     private final NotNullProperty<Component> placeholder = new NotNullProperty<>(Component.empty());
@@ -28,10 +30,13 @@ public final class TextFieldWidget extends TClickableWidget {
     public TextFieldWidget() {
         eClicked.removeListener(ONCLICK_SOUND);
         for (var label : new TLabelElement[]{textLabel, placeholderLabel}) {
-            label.textAlignmentProperty().set(CompassDirection.WEST, TextFieldWidget.class);
-            label.dropShadowProperty().set(false, TextFieldWidget.class);
+            label.textAlignmentProperty()
+                .set(CompassDirection.WEST, TextFieldWidget.class);
+            label.dropShadowProperty()
+                .set(false, TextFieldWidget.class);
         }
-        placeholderLabel.textColorProperty().set(0xFF8996A3, TextFieldWidget.class);
+        placeholderLabel.textColorProperty()
+            .set(0xFF8996A3, TextFieldWidget.class);
         text.addFilter(TextFieldWidget::singleLine, TextFieldWidget.class);
         text.addChangeListener((property, previous, current) -> {
             cursor = anchor = current.length();
@@ -41,8 +46,13 @@ public final class TextFieldWidget extends TClickableWidget {
         boundsProperty().addChangeListener((property, previous, current) -> refreshView());
     }
 
-    public NotNullProperty<String> textProperty() { return text; }
-    public NotNullProperty<Component> placeholderProperty() { return placeholder; }
+    public NotNullProperty<String> textProperty() {
+        return text;
+    }
+
+    public NotNullProperty<Component> placeholderProperty() {
+        return placeholder;
+    }
 
     @Override
     protected void initCallback() {
@@ -52,17 +62,39 @@ public final class TextFieldWidget extends TClickableWidget {
     }
 
     @Override
-    public CursorType getCursor() { return CursorType.IBEAM; }
-
-    private static String singleLine(String value) {
-        return value.replace('\r', ' ').replace('\n', ' ').replace('\t', ' ').codePoints()
-            .filter(codePoint -> !Character.isISOControl(codePoint)).limit(4096)
-            .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append).toString();
+    public CursorType getCursor() {
+        return CursorType.IBEAM;
     }
 
-    private int width(String value) { return textLabel.fontProperty().get().width(value); }
-    private int previous(int index) { return text.get().offsetByCodePoints(index, index > 0 ? -1 : 0); }
-    private int next(int index) { return text.get().offsetByCodePoints(index, index < text.get().length() ? 1 : 0); }
+    private static String singleLine(String value) {
+        return value.replace('\r', ' ')
+            .replace('\n', ' ')
+            .replace('\t', ' ')
+            .codePoints()
+            .filter(codePoint -> !Character.isISOControl(codePoint))
+            .limit(4096)
+            .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
+            .toString();
+    }
+
+    private int width(String value) {
+        return textLabel.fontProperty()
+            .get()
+            .width(value);
+    }
+
+    private int previous(int index) {
+        return text.get()
+            .offsetByCodePoints(index, index > 0 ? -1 : 0);
+    }
+
+    private int next(int index) {
+        return text.get()
+            .offsetByCodePoints(
+                index, index < text.get()
+                    .length() ? 1 : 0
+            );
+    }
 
     private void refreshView() {
         var bb = getBounds();
@@ -81,13 +113,16 @@ public final class TextFieldWidget extends TClickableWidget {
         }
         textLabel.setText(Component.literal(value.substring(viewStart, viewEnd)));
         placeholderLabel.setText(placeholder.get());
-        placeholderLabel.visibleProperty().set(value.isEmpty(), TextFieldWidget.class);
+        placeholderLabel.visibleProperty()
+            .set(value.isEmpty(), TextFieldWidget.class);
         textLabel.setBounds(bb.x + 4, bb.y + 2, Math.max(1, bb.width - 8), Math.max(1, bb.height - 4));
         placeholderLabel.setBounds(textLabel.getBounds());
     }
 
     private void moveCursor(int target, boolean extendSelection) {
-        cursor = Math.clamp(target, 0, text.get().length());
+        cursor = Math.clamp(target, 0, text.get()
+            .length()
+        );
         if (!extendSelection) anchor = cursor;
         lastEdit = System.currentTimeMillis();
         refreshView();
@@ -98,7 +133,12 @@ public final class TextFieldWidget extends TClickableWidget {
         int start = Math.min(cursor, anchor), end = Math.max(cursor, anchor);
         String value = text.get();
         text.set(value.substring(0, start) + insertion + value.substring(end), TextFieldWidget.class);
-        moveCursor(Math.min(start + insertion.length(), text.get().length()), false);
+        moveCursor(
+            Math.min(
+                start + insertion.length(), text.get()
+                    .length()
+            ), false
+        );
     }
 
     private int indexAt(double mouseX) {
@@ -122,13 +162,15 @@ public final class TextFieldWidget extends TClickableWidget {
     public boolean inputCallback(TInputContext.InputDiscoveryPhase phase, TInputContext context) {
         if (phase != TInputContext.InputDiscoveryPhase.MAIN || !isFocusable()) return false;
         if (context.getInputType() == TInputContext.InputType.MOUSE_PRESS
-            && Integer.valueOf(SDL_BUTTON_LEFT).equals(context.getMouseButton())) {
+            && Integer.valueOf(SDL_BUTTON_LEFT)
+            .equals(context.getMouseButton())) {
             selecting = true;
             moveCursor(indexAt(context.getMouseX()), TGuiUtils.isShiftDown());
             return true;
         }
         if (context.getInputType() == TInputContext.InputType.MOUSE_RELEASE
-            && Integer.valueOf(SDL_BUTTON_LEFT).equals(context.getMouseButton())) {
+            && Integer.valueOf(SDL_BUTTON_LEFT)
+            .equals(context.getMouseButton())) {
             selecting = false;
             return true;
         }
@@ -142,7 +184,8 @@ public final class TextFieldWidget extends TClickableWidget {
         boolean shift = (modifiers & SDL_KMOD_SHIFT) != 0;
         if (context.getInputType() == TInputContext.InputType.CHAR_TYPE) {
             if (!control && context.getCharacter() != null && !Character.isISOControl(context.getCharacter())) {
-                replaceSelection(context.getCharacter().toString());
+                replaceSelection(context.getCharacter()
+                    .toString());
             }
             return true;
         }
@@ -150,11 +193,19 @@ public final class TextFieldWidget extends TClickableWidget {
         int key = context.getScanCode();
         if (control) {
             switch (key) {
-                case SDL_SCANCODE_A -> { anchor = 0; moveCursor(text.get().length(), true); return true; }
+                case SDL_SCANCODE_A -> {
+                    anchor = 0;
+                    moveCursor(
+                        text.get()
+                            .length(), true
+                    );
+                    return true;
+                }
                 case SDL_SCANCODE_C, SDL_SCANCODE_X -> {
                     var client = getClient();
                     if (client != null && cursor != anchor) {
-                        client.keyboardHandler.setClipboard(text.get().substring(Math.min(cursor, anchor), Math.max(cursor, anchor)));
+                        client.keyboardHandler.setClipboard(text.get()
+                            .substring(Math.min(cursor, anchor), Math.max(cursor, anchor)));
                         if (key == SDL_SCANCODE_X) replaceSelection("");
                     }
                     return true;
@@ -164,14 +215,20 @@ public final class TextFieldWidget extends TClickableWidget {
                     if (client != null) replaceSelection(client.keyboardHandler.getClipboard());
                     return true;
                 }
-                default -> { }
+                default -> {
+                }
             }
         }
         switch (key) {
-            case SDL_SCANCODE_LEFT -> moveCursor(!shift && cursor != anchor ? Math.min(cursor, anchor) : previous(cursor), shift);
-            case SDL_SCANCODE_RIGHT -> moveCursor(!shift && cursor != anchor ? Math.max(cursor, anchor) : next(cursor), shift);
+            case SDL_SCANCODE_LEFT ->
+                moveCursor(!shift && cursor != anchor ? Math.min(cursor, anchor) : previous(cursor), shift);
+            case SDL_SCANCODE_RIGHT ->
+                moveCursor(!shift && cursor != anchor ? Math.max(cursor, anchor) : next(cursor), shift);
             case SDL_SCANCODE_HOME -> moveCursor(0, shift);
-            case SDL_SCANCODE_END -> moveCursor(text.get().length(), shift);
+            case SDL_SCANCODE_END -> moveCursor(
+                text.get()
+                    .length(), shift
+            );
             case SDL_SCANCODE_BACKSPACE -> {
                 if (cursor == anchor) anchor = previous(cursor);
                 replaceSelection("");
@@ -180,7 +237,9 @@ public final class TextFieldWidget extends TClickableWidget {
                 if (cursor == anchor) anchor = next(cursor);
                 replaceSelection("");
             }
-            default -> { return false; }
+            default -> {
+                return false;
+            }
         }
         return true;
     }
@@ -192,8 +251,11 @@ public final class TextFieldWidget extends TClickableWidget {
         if (isFocused() && cursor != anchor) {
             int start = Math.clamp(Math.min(cursor, anchor), viewStart, viewEnd);
             int end = Math.clamp(Math.max(cursor, anchor), viewStart, viewEnd);
-            int x = bb.x + 4 + width(text.get().substring(viewStart, start));
-            pencil.fillColor(x, bb.y + 3, width(text.get().substring(start, end)), Math.max(1, bb.height - 6), 0x885880AA);
+            int x = bb.x + 4 + width(text.get()
+                .substring(viewStart, start));
+            pencil.fillColor(x, bb.y + 3, width(text.get()
+                .substring(start, end)), Math.max(1, bb.height - 6), 0x885880AA
+            );
         }
     }
 
@@ -202,7 +264,8 @@ public final class TextFieldWidget extends TClickableWidget {
         var bb = getBounds();
         pencil.drawOutlineIn(bb.x, bb.y, bb.width, bb.height, isHoveredOrFocused() ? 0xFF9CCBEE : 0x66888888);
         if (isFocused() && (System.currentTimeMillis() - lastEdit) % 1000 < 500) {
-            int x = bb.x + 4 + width(text.get().substring(viewStart, cursor));
+            int x = bb.x + 4 + width(text.get()
+                .substring(viewStart, cursor));
             pencil.fillColor(x, bb.y + 4, 1, Math.max(1, bb.height - 8), 0xFFE6EDF3);
         }
     }

@@ -32,7 +32,8 @@ public final class TabStripPanel extends TElement {
                 int x = getBounds().x;
                 for (var tab : workspace.tabs()) {
                     var button = new TabButton(tab);
-                    int width = Math.min(150, Math.max(
+                    int width = Math.min(
+                        150, Math.max(
                             60, button.getLabel()
                                 .getTextWidth() + 14
                         )
@@ -50,7 +51,9 @@ public final class TabStripPanel extends TElement {
         add(scrollbar);
     }
 
-    /** The label and close action share one tab background and outline. */
+    /**
+     * The label and close action share one tab background and outline.
+     */
     private final class TabButton extends TButtonWidget.Paintable {
         private final WorkspaceTab tab;
 
@@ -58,10 +61,11 @@ public final class TabStripPanel extends TElement {
             super(0x33000000, 0x66888888, WidgetTheme.ACCENT);
             this.tab = tab;
             getLabel().setText(tab.title());
-            getLabel().textColorProperty().set(
-                tab.equals(workspace.currentTab()) ? WidgetTheme.ACCENT : 0xFFFFFFFF,
-                TabStripPanel.class
-            );
+            getLabel().textColorProperty()
+                .set(
+                    tab.equals(workspace.currentTab()) ? WidgetTheme.ACCENT : 0xFFFFFFFF,
+                    TabStripPanel.class
+                );
             tooltipProperty().set(ignored -> TTooltip.of(tab.title()), TabStripPanel.class);
             eClicked.addListener(ignored -> workspace.open(tab));
         }
@@ -91,9 +95,13 @@ public final class TabStripPanel extends TElement {
                     pencil.fillColor(bounds.x, bounds.y, bounds.width, bounds.height, 0x33FFFFFF);
                 }
             };
-            close.getLabel().setText(Component.literal("×"));
-            close.getLabel().textScaleProperty().set(0.75, TabStripPanel.class);
-            close.tooltipProperty().set(ignored -> TTooltip.of(text("close")), TabStripPanel.class);
+            close.getLabel()
+                .setText(Component.literal("×"));
+            close.getLabel()
+                .textScaleProperty()
+                .set(0.75, TabStripPanel.class);
+            close.tooltipProperty()
+                .set(ignored -> TTooltip.of(text("close")), TabStripPanel.class);
             close.setBounds(bb.endX - closeWidth() - 2, bb.y + 2, closeWidth(), bb.height - 4);
             close.eClicked.addListener(ignored -> workspace.closeTab(tab));
             add(close);

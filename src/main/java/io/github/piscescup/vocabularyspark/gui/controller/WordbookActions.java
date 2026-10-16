@@ -36,7 +36,8 @@ public final class WordbookActions {
             .setLastScreen(client.gui.screen())
             .setCurrentDirectory(lastDirectory)
             .setPathFilter(
-                TFileChooserScreen.PathFilter.extnames(text("supported_files"), "json", "txt", "sqlite", "JSON", "TXT", "SQLITE"))
+                TFileChooserScreen.PathFilter.extnames(
+                    text("supported_files"), "json", "txt", "sqlite", "JSON", "TXT", "SQLITE"))
             .build();
         chooser.getResult()
             .thenAccept(paths -> {

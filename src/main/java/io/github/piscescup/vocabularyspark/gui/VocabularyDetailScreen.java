@@ -10,7 +10,9 @@ import net.minecraft.client.gui.screens.Screen;
 
 import java.util.Objects;
 
-/** Independent dictionary-detail GUI. Back or Escape returns to the originating workspace page. */
+/**
+ * Independent dictionary-detail GUI. Back or Escape returns to the originating workspace page.
+ */
 public final class VocabularyDetailScreen extends TScreenPlus implements ILastScreenProvider {
     private final Screen previous;
     private final Word vocabulary;
@@ -24,10 +26,14 @@ public final class VocabularyDetailScreen extends TScreenPlus implements ILastSc
     }
 
     @Override
-    public Screen getLastScreen() { return previous; }
+    public Screen getLastScreen() {
+        return previous;
+    }
 
     @Override
-    public boolean isAllowingInGameHud() { return false; }
+    public boolean isAllowingInGameHud() {
+        return false;
+    }
 
     @Override
     protected void initCallback() {

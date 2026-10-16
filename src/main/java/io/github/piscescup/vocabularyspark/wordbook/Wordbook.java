@@ -6,7 +6,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
-/** Portable wordbook contents. Dictionary entries and learning progress live separately. */
+/**
+ * Portable wordbook contents. Dictionary entries and learning progress live separately.
+ */
 public record Wordbook(int formatVersion, String id, String name, List<String> words) {
     public static final int CURRENT_VERSION = 1;
     public static final int MAX_WORDS = 100_000;
@@ -31,7 +33,8 @@ public record Wordbook(int formatVersion, String id, String name, List<String> w
             if (word == null) throw new IllegalArgumentException("A word cannot be null");
             word = word.strip();
             if (word.isEmpty()) continue;
-            if (word.length() > 200 || word.codePoints().anyMatch(Character::isISOControl)) {
+            if (word.length() > 200 || word.codePoints()
+                .anyMatch(Character::isISOControl)) {
                 throw new IllegalArgumentException("Invalid word: " + word.substring(0, Math.min(word.length(), 40)));
             }
             unique.putIfAbsent(word.toLowerCase(Locale.ROOT), word);
@@ -40,11 +43,15 @@ public record Wordbook(int formatVersion, String id, String name, List<String> w
         words = List.copyOf(unique.values());
     }
 
-    /** TXT has no metadata; derive a repeatable identity without changing spelling or order. */
+    /**
+     * TXT has no metadata; derive a repeatable identity without changing spelling or order.
+     */
     public static Wordbook fromText(String name, List<String> words) {
         var normalized = new Wordbook(CURRENT_VERSION, "temporary", name, words);
         var identity = name + "\n" + String.join("\n", normalized.words());
-        return new Wordbook(CURRENT_VERSION,
-            "txt-" + UUID.nameUUIDFromBytes(identity.getBytes(StandardCharsets.UTF_8)), name, normalized.words());
+        return new Wordbook(
+            CURRENT_VERSION,
+            "txt-" + UUID.nameUUIDFromBytes(identity.getBytes(StandardCharsets.UTF_8)), name, normalized.words()
+        );
     }
 }

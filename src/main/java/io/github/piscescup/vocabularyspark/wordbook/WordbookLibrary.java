@@ -11,7 +11,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-/** Per-book SQLite storage and bundled seeds in the current portable wordbook format. */
+/**
+ * Per-book SQLite storage and bundled seeds in the current portable wordbook format.
+ */
 public final class WordbookLibrary {
     private static final String BUILTIN_ROOT = "/assets/vocabulary-spark/wordbooks/";
     private static final List<String> BUILTIN_FILES = List.of(
@@ -20,13 +22,16 @@ public final class WordbookLibrary {
     private final Path directory;
     private final boolean includeBuiltins;
 
-    /** Creates a library containing only locally managed books. */
+    /**
+     * Creates a library containing only locally managed books.
+     */
     public WordbookLibrary(Path directory) {
         this(directory, false);
     }
 
     private WordbookLibrary(Path directory, boolean includeBuiltins) {
-        this.directory = directory.toAbsolutePath().normalize();
+        this.directory = directory.toAbsolutePath()
+            .normalize();
         this.includeBuiltins = includeBuiltins;
     }
 
@@ -41,7 +46,9 @@ public final class WordbookLibrary {
         return new WordbookLibrary(directory, true);
     }
 
-    public Path directory() { return directory; }
+    public Path directory() {
+        return directory;
+    }
 
     public LoadResult load() throws IOException {
         Files.createDirectories(directory);
@@ -50,7 +57,11 @@ public final class WordbookLibrary {
         if (includeBuiltins) loadBuiltins(books, failures);
         var localIds = new HashSet<String>();
         try (var files = Files.list(directory)) {
-            for (Path path : files.filter(p -> p.getFileName().toString().endsWith(".sqlite")).sorted().toList()) {
+            for (Path path : files.filter(p -> p.getFileName()
+                    .toString()
+                    .endsWith(".sqlite"))
+                .sorted()
+                .toList()) {
                 try {
                     Wordbook book = WordbookDatabase.read(path);
                     if (!localIds.add(book.id())) {
@@ -65,7 +76,9 @@ public final class WordbookLibrary {
         return new LoadResult(List.copyOf(books.values()), List.copyOf(failures));
     }
 
-    /** JSON resources are distribution seeds; SQLite is the writable runtime store. */
+    /**
+     * JSON resources are distribution seeds; SQLite is the writable runtime store.
+     */
     private void loadBuiltins(Map<String, Wordbook> books, List<String> failures) {
         for (String filename : BUILTIN_FILES) {
             String resource = BUILTIN_ROOT + filename;
@@ -88,11 +101,14 @@ public final class WordbookLibrary {
         WordbookDatabase.write(databasePath(book.id()), book, replace, false);
     }
 
-    /** User-supplied IDs are never used as file paths. */
+    /**
+     * User-supplied IDs are never used as file paths.
+     */
     public Path databasePath(String id) {
         String filename = UUID.nameUUIDFromBytes(id.getBytes(StandardCharsets.UTF_8)) + ".sqlite";
         return directory.resolve(filename);
     }
 
-    public record LoadResult(List<Wordbook> books, List<String> failures) {}
+    public record LoadResult(List<Wordbook> books, List<String> failures) {
+    }
 }

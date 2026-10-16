@@ -10,7 +10,9 @@ import io.github.piscescup.vocabularyspark.gui.widget.WordbookTitles;
 import io.github.piscescup.vocabularyspark.gui.controller.VocabularyWorkspace;
 import io.github.piscescup.vocabularyspark.gui.controller.WordbookActions;
 import io.github.piscescup.vocabularyspark.gui.controller.WorkspaceTab;
+
 import java.util.Locale;
+
 import net.minecraft.network.chat.Component;
 
 import static io.github.piscescup.vocabularyspark.gui.widget.WidgetTheme.*;
@@ -30,27 +32,30 @@ public final class HomeTabGUI extends WorkspaceTabGUI {
         if (bb.width >= 480) {
             int primaryWidth = (bb.width - 30) * 2 / 3;
             add(new ScrollPanelWidget(bb.x + 10, bb.y + 10, primaryWidth, bb.height - 20, this::mainContent));
-            add(new ScrollPanelWidget(bb.x + 20 + primaryWidth, bb.y + 10,
+            add(new ScrollPanelWidget(
+                bb.x + 20 + primaryWidth, bb.y + 10,
                 bb.width - primaryWidth - 30, bb.height - 20, this::sideContent
             ));
         } else {
             // Small windows stack the sections instead of squeezing text into narrow columns.
-            add(new ScrollPanelWidget(bb.x + 6, bb.y + 6, bb.width - 12, bb.height - 12, outer -> {
-                    var ob = outer.getBounds();
-                    int bottom = mainContent(outer);
-                    var side = new TPanelElement.Transparent() {
-                        @Override
-                        protected void initCallback() {
-                            sideContent(this);
-                        }
-                    };
-                    side.setBounds(ob.x, bottom + 15, ob.width, Math.max(
-                            150, workspace.books()
-                                .size() * 27 + 90
-                        )
-                    );
-                    outer.add(side);
-                }
+            add(new ScrollPanelWidget(
+                bb.x + 6, bb.y + 6, bb.width - 12, bb.height - 12, outer -> {
+                var ob = outer.getBounds();
+                int bottom = mainContent(outer);
+                var side = new TPanelElement.Transparent() {
+                    @Override
+                    protected void initCallback() {
+                        sideContent(this);
+                    }
+                };
+                side.setBounds(
+                    ob.x, bottom + 15, ob.width, Math.max(
+                        150, workspace.books()
+                            .size() * 27 + 90
+                    )
+                );
+                outer.add(side);
+            }
             ));
         }
     }
@@ -65,8 +70,13 @@ public final class HomeTabGUI extends WorkspaceTabGUI {
             .set(TTextureElement.Mode.TEXTURE, HomeTabGUI.class);
         icon.setBounds(x, y, 32, 32);
         panel.add(icon);
-        panel.add(Labels.label(Component.literal(VocabularySparkModReferences.MOD_NAME), x + 40, y, width - 40, 17, ACCENT));
-        panel.add(Labels.label(Component.literal("v" + VocabularySparkModReferences.MOD_VERSION), x + 40, y + 18, width - 40, 14, MUTED));
+        panel.add(
+            Labels.label(Component.literal(VocabularySparkModReferences.MOD_NAME), x + 40, y, width - 40, 17, ACCENT));
+        panel.add(
+            Labels.label(
+                Component.literal("v" + VocabularySparkModReferences.MOD_VERSION), x + 40, y + 18, width - 40,
+                14, MUTED
+            ));
         var intro = Labels.paragraph(text("home_intro"), x, y + 44, width, MUTED);
         panel.add(intro);
         y = intro.getBounds().endY + 14;
@@ -75,25 +85,32 @@ public final class HomeTabGUI extends WorkspaceTabGUI {
         y += 21;
         int buttonWidth = (width - 10) / 2;
         panel.add(Buttons.button(text("import"), x, y, buttonWidth, 24, !workspace.busy(), actions::importBook));
-        panel.add(Buttons.button(text("wordbooks"), x + buttonWidth + 10, y, buttonWidth, 24, true,
+        panel.add(Buttons.button(
+            text("wordbooks"), x + buttonWidth + 10, y, buttonWidth, 24, true,
             () -> workspace.open(WorkspaceTab.Page.WORDBOOKS)
         ));
         y += 29;
-        panel.add(Buttons.button(text("export"), x, y, buttonWidth, 24,
+        panel.add(Buttons.button(
+            text("export"), x, y, buttonWidth, 24,
             !workspace.busy() && workspace.selectedBook()
                 .isPresent(), actions::exportSelected
         ));
-        panel.add(Buttons.button(text("search"), x + buttonWidth + 10, y, buttonWidth, 24, true,
-            () -> workspace.open(WorkspaceTab.Page.SEARCH)));
+        panel.add(Buttons.button(
+            text("search"), x + buttonWidth + 10, y, buttonWidth, 24, true,
+            () -> workspace.open(WorkspaceTab.Page.SEARCH)
+        ));
         y += 29;
-        panel.add(Buttons.button(text("study"), x, y, width, 24, true,
-            () -> workspace.open(WorkspaceTab.Page.STUDY)));
+        panel.add(Buttons.button(
+            text("study"), x, y, width, 24, true,
+            () -> workspace.open(WorkspaceTab.Page.STUDY)
+        ));
         y += 35;
 
         panel.add(Labels.label(text("overview"), x, y, width, 16, ACCENT));
         y += 21;
-        y = stat(panel, text("book_count"), Component.literal(Integer.toString(workspace.books()
-            .size())), x, y, width
+        y = stat(
+            panel, text("book_count"), Component.literal(Integer.toString(workspace.books()
+                .size())), x, y, width
         );
         long count = workspace.books()
             .stream()
@@ -143,7 +160,8 @@ public final class HomeTabGUI extends WorkspaceTabGUI {
             y += 36;
         } else {
             for (var book : workspace.books()) {
-                panel.add(Buttons.button(text(
+                panel.add(Buttons.button(
+                    text(
                         "book_entry", WordbookTitles.title(book), book.words()
                             .size()
                     ), x, y, width, 24,
