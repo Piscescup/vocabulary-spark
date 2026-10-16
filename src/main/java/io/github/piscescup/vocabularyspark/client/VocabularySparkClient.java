@@ -3,10 +3,11 @@ package io.github.piscescup.vocabularyspark.client;
 import com.mojang.blaze3d.platform.InputConstants;
 import io.github.piscescup.vocabularyspark.VocabularySparkModReferences;
 import io.github.piscescup.vocabularyspark.client.audio.PronunciationPlayer;
-import io.github.piscescup.vocabularyspark.gui.workspace.controller.VocabularyWorkspace;
-import io.github.piscescup.vocabularyspark.gui.workspace.controller.WordbookActions;
-import io.github.piscescup.vocabularyspark.gui.workspace.view.VocabularyScreen;
+import io.github.piscescup.vocabularyspark.gui.controller.VocabularyWorkspace;
+import io.github.piscescup.vocabularyspark.gui.controller.WordbookActions;
+import io.github.piscescup.vocabularyspark.gui.VocabularyScreen;
 import io.github.piscescup.vocabularyspark.wordbook.WordbookLibrary;
+import io.github.piscescup.vocabularyspark.study.StudyFiles;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
@@ -14,10 +15,14 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.Screen;
+
+import java.util.Objects;
 
 import static net.fabricmc.fabric.api.client.command.v2.ClientCommands.literal;
 
 public final class VocabularySparkClient implements ClientModInitializer {
+    private static VocabularySparkClient instance;
     private VocabularyWorkspace workspace;
     private WordbookActions actions;
 
@@ -28,8 +33,11 @@ public final class VocabularySparkClient implements ClientModInitializer {
             .resolve(VocabularySparkModReferences.MOD_ID)
             .resolve("wordbooks"));
 
-        workspace = new VocabularyWorkspace(library, client::schedule, new PronunciationPlayer(client));
+        var user = client.getUser();
+        var studyFiles = new StudyFiles(library.directory().getParent(), user.getName(), user.getProfileId());
+        workspace = new VocabularyWorkspace(library, client::schedule, new PronunciationPlayer(client), studyFiles);
         actions = new WordbookActions(client, workspace);
+        instance = this;
         workspace.load();
 
         var category = KeyMapping.Category.register(VocabularySparkModReferences.fromPath("main"));
@@ -61,7 +69,12 @@ public final class VocabularySparkClient implements ClientModInitializer {
     }
 
     private void openScreen(Minecraft client) {
-        var screen = new VocabularyScreen(client.gui.screen(), workspace, actions);
-        client.gui.setScreen(screen.getAsScreen());
+        client.gui.setScreen(createScreen(client.gui.screen()));
+    }
+
+    /** Creates a workspace screen using the initialized client state and the supplied return screen. */
+    public static Screen createScreen(Screen previous) {
+        var initialized = Objects.requireNonNull(instance, "Vocabulary Spark client has not initialized");
+        return new VocabularyScreen(previous, initialized.workspace, initialized.actions).getAsScreen();
     }
 }

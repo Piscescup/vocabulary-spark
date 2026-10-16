@@ -1,0 +1,6 @@
+{
+  "formatVersion": 1,
+  "id": "sample-exam",
+  "name": "示例词库",
+  "words": ["spark", "ice cream", "vocabulary"]
+}

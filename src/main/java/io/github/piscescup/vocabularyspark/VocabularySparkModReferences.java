@@ -48,6 +48,7 @@ public final class VocabularySparkModReferences {
      */
     public static final Gson GSON = new GsonBuilder()
         .setPrettyPrinting()
+        .disableHtmlEscaping()
         .create();
 
     /** The shared Log4j logger named using {@link #MOD_NAME}. */

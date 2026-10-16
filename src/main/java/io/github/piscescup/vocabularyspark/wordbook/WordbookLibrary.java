@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-/** Local managed copies and optional bundled books; imported source files are never modified. */
+/** Per-book SQLite storage and bundled seeds in the current portable wordbook format. */
 public final class WordbookLibrary {
     private static final String BUILTIN_ROOT = "/assets/vocabulary-spark/wordbooks/";
     private static final List<String> BUILTIN_FILES = List.of(
@@ -31,9 +31,8 @@ public final class WordbookLibrary {
     }
 
     /**
-     * Creates a library that reads bundled books directly from the classpath,
-     * including when resources are inside a JAR. Local books with the same ID
-     * override bundled books, allowing confirmed imports to survive restarts.
+     * Creates a library seeded from classpath resources, including resources inside a JAR.
+     * Local books override bundled seeds. Existing learning records survive seed updates.
      *
      * @param directory directory for imported and overridden books
      * @return a library containing bundled and local books
@@ -51,9 +50,9 @@ public final class WordbookLibrary {
         if (includeBuiltins) loadBuiltins(books, failures);
         var localIds = new HashSet<String>();
         try (var files = Files.list(directory)) {
-            for (Path path : files.filter(p -> p.getFileName().toString().endsWith(".json")).sorted().toList()) {
+            for (Path path : files.filter(p -> p.getFileName().toString().endsWith(".sqlite")).sorted().toList()) {
                 try {
-                    Wordbook book = WordbookFiles.read(path);
+                    Wordbook book = WordbookDatabase.read(path);
                     if (!localIds.add(book.id())) {
                         throw new IOException("Duplicate wordbook id: " + book.id());
                     }
@@ -66,13 +65,15 @@ public final class WordbookLibrary {
         return new LoadResult(List.copyOf(books.values()), List.copyOf(failures));
     }
 
-    /** Bundled files are read as streams; no writable extracted copies are needed. */
-    private static void loadBuiltins(Map<String, Wordbook> books, List<String> failures) {
+    /** JSON resources are distribution seeds; SQLite is the writable runtime store. */
+    private void loadBuiltins(Map<String, Wordbook> books, List<String> failures) {
         for (String filename : BUILTIN_FILES) {
             String resource = BUILTIN_ROOT + filename;
             try (var stream = WordbookLibrary.class.getResourceAsStream(resource)) {
                 if (stream == null) throw new IOException("Missing bundled wordbook: " + resource);
-                Wordbook book = WordbookFiles.readJson(stream, filename);
+                Wordbook book = WordbookFiles.readJson(stream);
+                WordbookDatabase.write(databasePath(book.id()), book, true, true);
+                book = WordbookDatabase.read(databasePath(book.id()));
                 if (books.putIfAbsent(book.id(), book) != null) {
                     throw new IOException("Duplicate bundled wordbook id: " + book.id());
                 }
@@ -84,12 +85,12 @@ public final class WordbookLibrary {
 
     public void save(Wordbook book, boolean replace) throws IOException {
         Files.createDirectories(directory);
-        WordbookFiles.write(storagePath(book.id()), book, replace);
+        WordbookDatabase.write(databasePath(book.id()), book, replace, false);
     }
 
     /** User-supplied IDs are never used as file paths. */
-    private Path storagePath(String id) {
-        String filename = UUID.nameUUIDFromBytes(id.getBytes(StandardCharsets.UTF_8)) + ".json";
+    public Path databasePath(String id) {
+        String filename = UUID.nameUUIDFromBytes(id.getBytes(StandardCharsets.UTF_8)) + ".sqlite";
         return directory.resolve(filename);
     }
 

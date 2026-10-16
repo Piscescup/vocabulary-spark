@@ -12,8 +12,8 @@ Both English and Simplified Chinese interface text are included.
 The home dashboard has File / View / About menus, quick access buttons, library
 counts and a list of imported wordbooks. Books open in closable tabs, with
 filtering and pagination. The home tab stays available. Online dictionary
-search is available from Home or View → Search. Daily study plans and spaced
-repetition are not implemented yet.
+search is available from Home or View → Search. Daily study is available from
+Home or View → Daily study.
 
 Five Qwerty Learner word lists (CET4, CET6, postgraduate English, IELTS and TOEFL)
 are bundled with the mod and appear automatically in the library. Their word
@@ -95,18 +95,80 @@ To use your own compatible API deployment, create
 The endpoint is read for each submitted query. The encoded search word is
 appended to it. It must return the existing `Vocabulary` JSON format.
 
+### Daily study and storage
+
+Choose a wordbook in the Daily study tab, set a daily goal from 1 to 500, and save
+the goal. The goal includes due reviews first, followed by new words in book order.
+Choose Familiar / Fuzzy / Unfamiliar below the word; revealing its meaning first
+is optional. Fuzzy and Unfamiliar return the card to the end of today's queue
+until Familiar is selected. Either answer also marks the word for tomorrow's
+review, even if it becomes Familiar later today. Tomorrow's reviews follow the
+same rule: Familiar on the first attempt stops further scheduled reviews, while
+Fuzzy or Unfamiliar repeats today and schedules the following day. Pronunciations
+and the full dictionary entry are available after revealing the answer.
+
+Each player and book retains its own goal and progress when switching books or restarting.
+The Today's words button opens a separate overview for the selected book. It
+shows new/review words, familiarity and tomorrow's review marks, with word search,
+status filters and 30-row pages. Click a word to open its full dictionary entry;
+Back/Escape returns to the overview with the search, filter and page preserved.
+The overview does not grade words. Its header/search controls stay fixed while
+word rows scroll; small windows use a filter dropdown in place of the sidebar.
+The built-in postgraduate book is displayed as 考研单词 in Chinese and China
+Master in English, while its study-directory prefix remains `cn_master`.
+Changing the goal keeps completed work and adjusts only the pending part of the
+day's plan. A new local calendar day gets a fresh plan; overdue reviews remain due.
+Online definitions still need the dictionary service, but recording progress does
+not depend on a successful lookup.
+
+The shared wordbook library is stored under `config/vocabulary-spark/wordbooks/`.
+Personal study data uses the logged-in Minecraft profile name and UUID:
+
+```text
+config/vocabulary-spark/
+├── wordbooks/<book UUID>.sqlite
+└── daily/<playername>_<player UUID>/
+    ├── settings.json
+    └── books/<book name>_<book UUID>/study.sqlite
+```
+
+Each study database keeps its own word rows, goal, per-word progress and daily
+queues. Queue rows are grouped by the local calendar date, preserving previous
+days without rewriting a large daily file. Word keys, review dates and daily queue positions are indexed;
+grading updates individual records in a transaction rather than rewriting a JSON
+book. SQLite JDBC is bundled inside the mod and opens these local files directly:
+users do not install a database, run a server or configure connection credentials.
+Disk work runs on background workers. Existing browsing still loads book word
+lists into memory; daily planning uses indexed database queries.
+
+Bundled study-directory prefixes are `cet4`, `cet6`, `cn_master` (考研英语),
+`ielts` and `toefl`. Custom books use their names with characters unsuitable for
+directory names replaced by underscores. The UUID suffix identifies each book.
+
+Bundled JSON files in the current format are seeds for the databases. The managed
+library reads SQLite files only. External import source files are never moved.
+Replacing a book keeps learning records for words that remain in it.
+Import/export uses portable TXT, JSON and SQLite without learning records.
+`daily/<playername>_<player UUID>/settings.json` stores the last selected book.
+Each player has independent settings and study databases.
+
 ### Import and export
 
 - **File → Import wordbook** opens TCDCommons' in-game file chooser.
-- Import UTF-8 JSON (schema below), Qwerty Learner JSON, or TXT with one
-  word/phrase per line.
+- Import UTF-8 JSON (schema below), TXT with one word/phrase per line, or a
+  Vocabulary Spark `.sqlite` wordbook in the current export format.
 - Blank lines and surrounding whitespace are removed. Duplicate words are
   compared without case; the first spelling and original order are preserved.
-- Imports are saved as managed JSON copies in
+- Imports are saved in per-book SQLite databases in
   `<game directory>/config/vocabulary-spark/wordbooks/`. Original files are
   left untouched. The library reloads when the client starts.
 - Open a book, then use **File → Export** or the book's Export button.
-- JSON preserves the ID, display name and word list. TXT contains only the
+- All export entry points use the same codec. Choose `.txt`, `.json` or `.sqlite`
+  in the file chooser. JSON and SQLite preserve the ID, display name, word order
+  and word list; SQLite exports are standalone files without required WAL sidecars.
+  All three export wordbook contents only, never a player's study history.
+  Choose an export location outside the managed `wordbooks/` and `daily/` directories.
+  TXT contains only the
   words; reimporting TXT derives a name from its filename and a stable ID from
   that name and the normalized contents.
 - Reimporting identical JSON selects the existing book. Changing a book with
@@ -128,23 +190,16 @@ The `examples/` directory contains small JSON and TXT files for trying the
 workflow. They are demonstrations, not complete exam vocabulary lists. Each
 book needs a stable, unique ID. Current limits are 16 MiB per imported file,
 100,000 source entries, 200 characters per word/name, and 128 characters per ID.
-Wordbooks contain membership and ordering; dictionary details and future
+Wordbooks contain membership and ordering; dictionary details and
 learning progress are separate data.
 
-### Qwerty Learner wordbooks
+### Bundled wordbooks
 
-Download a JSON file from
+Five word lists from
 [Qwerty Learner's public/dicts directory](https://github.com/RealKai42/qwerty-learner/tree/master/public/dicts)
-using **Raw / Download raw file**, then select it through **File → Import wordbook**.
-The importer automatically recognizes arrays of objects containing a string
-`name`. It imports those names as words, preserves phrases and ordering, and
-removes case-insensitive duplicates. Missing or invalid names reject the whole
-import rather than silently losing entries. Optional translations and phonetic
-fields are not required or stored in the wordbook.
+are bundled after conversion to the current Vocabulary Spark wordbook format:
 
-The five basic files receive readable titles:
-
-| Source file | Imported title |
+| Source file | Bundled title |
 | --- | --- |
 | `CET4_T.json` | CET-4 · Qwerty |
 | `CET6_T.json` | CET-6 · Qwerty |
@@ -152,19 +207,13 @@ The five basic files receive readable titles:
 | `IELTS_3_T.json` | IELTS · Qwerty |
 | `TOEFL_3_T.json` | TOEFL · Qwerty |
 
-Other Qwerty dictionaries use their filename as the title, followed by `· Qwerty`.
-The ID is derived from the filename without its extension (case-insensitive),
-not its directory or contents. Keep filenames when updating a source book;
-changed contents then use the existing replacement-confirmation workflow.
-Different books should use different filenames. Exported JSON uses the native
-Vocabulary Spark schema and preserves this ID, so no conversion is needed on
-subsequent imports. Original source files are never modified.
-
-`examples/sample-qwerty.json` is a small, locally authored format demonstration.
+Custom JSON wordbooks use the `formatVersion`, `id`, `name` and `words` object
+shown above.
+`examples/sample-exam.json` is a small, locally authored format demonstration.
 The five basic datasets are bundled under
 `src/main/resources/assets/vocabulary-spark/wordbooks/` in native wordbook format.
-They are read directly from the JAR using resource streams, without extraction
-or network requests. Imported local books with the same ID override their bundled
+Their resources are read from the JAR and seed per-book SQLite files without
+network requests. Imported local books with the same ID override their bundled
 versions after the existing replacement confirmation; other local books appear
 alongside them. Updating the mod updates bundled books unless a local override
 exists. `WordbookLibrary.withBuiltins(...)` enables this combined library, while
@@ -189,7 +238,8 @@ The MVC/editor/tab layout follows the organization of
 [Better Statistics' views](https://github.com/TheCSDev/betterstats/tree/main/src/main/java/com/thecsdev/betterstats/mcbs/view).
 Better Statistics itself is not a runtime dependency and its assets are not bundled.
 
-- `wordbook/`: portable wordbook model, JSON/TXT codec and local library.
+- `wordbook/`: portable wordbook model, TXT/JSON/SQLite codec and local library.
+- `study/`: player-specific paths, persistent dated queues and familiarity tracking.
 - `dictionary/`: asynchronous HTTP queries and bounded in-memory word cache.
 - `gui/widget/`: reusable controls, clickable word summaries and dictionary-detail
   components (navigation, pronunciation controls, bilingual senses and page layout).
@@ -260,6 +310,15 @@ arrays become immutable empty lists. Raw incomplete pronunciations are retained;
 non-blank region is supported. Invalid URLs throw `IllegalArgumentException`
 when a pronunciation view is requested. Record fields follow Gson's normal
 conversion rules.
+
+## Language generation
+
+Translations are maintained in `datagen/ENUSLanguageProvider` and
+`datagen/ZHCNLanguageProvider`, registered by
+`VocabularySparkDataGenerator`. Run `./gradlew runDatagen` after editing them to
+update the language JSON files in `src/main/generated/assets/vocabulary-spark/lang/`.
+Loom includes this generated resource directory automatically. The existing JSON
+files have been moved there to preserve translations before the next generation run.
 
 ## Setup
 

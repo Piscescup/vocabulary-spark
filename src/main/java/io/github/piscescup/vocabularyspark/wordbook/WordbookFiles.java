@@ -1,7 +1,6 @@
 package io.github.piscescup.vocabularyspark.wordbook;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -17,39 +16,39 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-/** Native and Qwerty Learner JSON/TXT import and atomic export, independent of the Minecraft client. */
+import static io.github.piscescup.vocabularyspark.VocabularySparkModReferences.GSON;
+
+/** One portable wordbook model for TXT, JSON and SQLite import/export. */
 public final class WordbookFiles {
-    private static final Gson JSON = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
+
     private static final long MAX_BYTES = 16 * 1024 * 1024;
 
     private WordbookFiles() {}
 
     public static Wordbook read(Path path) throws IOException {
         if (Files.size(path) > MAX_BYTES) throw new IOException("Wordbook exceeds 16 MiB");
+        if (extension(path).equals("sqlite")) return WordbookDatabase.read(path);
         String text = Files.readString(path, StandardCharsets.UTF_8);
         if (text.startsWith("\uFEFF")) text = text.substring(1);
         return switch (extension(path)) {
             case "txt" -> Wordbook.fromText(baseName(path), text.lines().toList());
-            case "json" -> readJson(text, baseName(path));
-            default -> throw new IOException("Choose a .json or .txt wordbook");
+            case "json" -> readJson(text);
+            default -> throw new IOException("Choose a .json, .txt or .sqlite wordbook");
         };
     }
 
     /** Reads a bounded UTF-8 JSON resource; the caller closes the stream. */
-    static Wordbook readJson(InputStream stream, String sourceName) throws IOException {
+    static Wordbook readJson(InputStream stream) throws IOException {
         byte[] bytes = stream.readNBytes((int) MAX_BYTES + 1);
         if (bytes.length > MAX_BYTES) throw new IOException("Wordbook exceeds 16 MiB");
         String text = new String(bytes, StandardCharsets.UTF_8);
         if (text.startsWith("\uFEFF")) text = text.substring(1);
-        return readJson(text, sourceName);
+        return readJson(text);
     }
 
-    private static Wordbook readJson(String text, String sourceName) throws IOException {
+    private static Wordbook readJson(String text) throws IOException {
         try {
             JsonElement root = JsonParser.parseString(text);
-            if (root.isJsonArray()) {
-                return QwertyWordbookAdapter.read(root.getAsJsonArray(), sourceName);
-            }
             if (!root.isJsonObject()) throw new IllegalArgumentException("Expected a JSON object");
             JsonObject object = root.getAsJsonObject();
             JsonElement version = object.get("formatVersion");
@@ -82,16 +81,23 @@ public final class WordbookFiles {
 
     /** Existing files are only replaced after the caller has obtained explicit confirmation. */
     public static void write(Path destination, Wordbook book, boolean replace) throws IOException {
-        String content = switch (extension(destination)) {
-            case "json" -> JSON.toJson(book) + "\n";
+        String format = extension(destination);
+        String content = switch (format) {
+            case "json" -> GSON.toJson(book) + "\n";
             case "txt" -> String.join("\n", book.words()) + "\n";
-            default -> throw new IOException("Export requires a .json or .txt extension");
+            case "sqlite" -> null;
+            default -> throw new IOException("Export requires a .json, .txt or .sqlite extension");
         };
         Path target = destination.toAbsolutePath().normalize();
         if (!replace && Files.exists(target)) throw new java.nio.file.FileAlreadyExistsException(target.toString());
+        if (format.equals("sqlite") && (Files.exists(target.resolveSibling(target.getFileName() + "-wal"))
+            || Files.exists(target.resolveSibling(target.getFileName() + "-shm")))) {
+            throw new IOException("This SQLite destination has active journal files; choose another export location");
+        }
         Path temporary = Files.createTempFile(target.getParent(), ".vocabulary-spark-", ".tmp");
         try {
-            Files.writeString(temporary, content, StandardCharsets.UTF_8);
+            if (format.equals("sqlite")) WordbookDatabase.writePortable(temporary, book);
+            else Files.writeString(temporary, content, StandardCharsets.UTF_8);
             if (replace) {
                 try {
                     Files.move(temporary, target, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
@@ -104,6 +110,12 @@ public final class WordbookFiles {
             }
         } finally {
             Files.deleteIfExists(temporary);
+            // These belong only to this uniquely named temporary export, never to the destination.
+            if (format.equals("sqlite")) {
+                Files.deleteIfExists(temporary.resolveSibling(temporary.getFileName() + "-wal"));
+                Files.deleteIfExists(temporary.resolveSibling(temporary.getFileName() + "-shm"));
+                Files.deleteIfExists(temporary.resolveSibling(temporary.getFileName() + "-journal"));
+            }
         }
     }
 

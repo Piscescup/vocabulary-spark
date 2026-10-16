@@ -8,6 +8,10 @@ repositories {
 	maven("https://api.modrinth.com/maven") {
 		content { includeGroup("maven.modrinth") }
 	}
+	maven {
+		name = "Terraformers"
+		url = uri("https://maven.terraformersmc.com/")
+	}
 	// Add repositories to retrieve artifacts from in here.
 	// You should only use this when depending on other mods because
 	// Loom adds the essential maven repositories to download Minecraft and libraries from automatically.
@@ -31,8 +35,10 @@ dependencies {
 	implementation("net.fabricmc.fabric-api:fabric-api:${providers.gradleProperty("fabric_api_version").get()}")
 	implementation("maven.modrinth:tcdcommons:${providers.gradleProperty("tcdcommons_version").get()}")
 
+	implementation("com.terraformersmc:modmenu:${providers.gradleProperty("modmenu_version").get()}")
 
-	include(implementation("javazoom:jlayer:1.0.1")!!)
+	include(implementation("javazoom:jlayer:${providers.gradleProperty("jlayer_version").get()}")!!)
+	include(implementation("org.xerial:sqlite-jdbc:${providers.gradleProperty("sqlite_jdbc_version").get()}")!!)
 
 	testImplementation(platform("org.junit:junit-bom:5.11.4"))
 	testImplementation("org.junit.jupiter:junit-jupiter")
