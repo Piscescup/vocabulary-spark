@@ -244,10 +244,16 @@ Better Statistics itself is not a runtime dependency and its assets are not bund
 - `gui/widget/`: reusable controls, clickable word summaries and dictionary-detail
   components (navigation, pronunciation controls, bilingual senses and page layout).
 - `client/audio/`: MP3 decoding, bounded pronunciation cache and game sound playback.
-- `gui/workspace/controller/`: workspace state, tabs, search state and file actions.
-- `gui/workspace/view/`: root GUI and tab-view factory.
-- `view/editor/`, `view/menubar/`, `view/tab/`, `view/dialog/`: menu strip,
-  tab strip, menu definitions, page views and confirmation dialog.
+- `gui/controller/`: workspace state, tabs, search state and file actions.
+- `gui/`: engine-facing screens and the root workspace GUI.
+- `gui/view/editor/`, `gui/view/tab/`, `gui/view/dialog/`: menu definitions and
+  layout, tab strip, shared tab-view base/factory, page views and confirmation dialog.
+
+The dictionary exposes its display data through `Word`, `Pronunciation` and
+`TranslationEntry`, implemented by `Vocabulary`, `AreaPronunciation` and
+`VocabularyTranslationEntry`. Sense ordering is defined by
+`TranslationEntry.compareTo`. Menu items are private to `MenubarPanel`, and the
+empty template Mixin has been removed.
 
 Views use TCDCommons `TScreenPlus`, `TElement`, panels, labels, buttons, scrollbars,
 context menus, file chooser and promise dialogs. Minecraft screen references
@@ -257,9 +263,9 @@ state changes scheduled back to the client thread. `Labels` and `Buttons` create
 configured native TCDCommons elements; controls with additional behavior remain
 components under `gui.widget`.
 
-Run `gradlew.bat test build` to verify file workflows, audio decoding and download
-behavior, and build the mod. Audio download tests use a temporary local HTTP
-server and generated silent MP3 frames, without contacting the dictionary service.
+Run `gradlew.bat test build` to run the dictionary-model regression tests and
+build the mod. Tests cover JSON round trips, sense ordering and pronunciation
+conversion without contacting the dictionary service.
 
 ## Dictionary JSON
 
@@ -269,7 +275,7 @@ No custom JSON adapter is required.
 In the mod, deserialize the response body with:
 
 ```java
-Vocabulary vocabulary = References.GSON.fromJson(json, Vocabulary.class);
+Vocabulary vocabulary = VocabularySparkModReferences.GSON.fromJson(json, Vocabulary.class);
 ```
 
 `VocabularyTranslationEntry` and `VocabularyExample` store strings and use
@@ -277,7 +283,7 @@ Vocabulary vocabulary = References.GSON.fromJson(json, Vocabulary.class);
 individual object from the response's `definition` array can be read independently:
 
 ```java
-VocabularyTranslationEntry entry = References.GSON.fromJson(
+VocabularyTranslationEntry entry = VocabularySparkModReferences.GSON.fromJson(
     definitionJson, VocabularyTranslationEntry.class
 );
 ```
@@ -286,13 +292,14 @@ The sense's `englishText()`, `chineseText()`, `rawPartOfSpeech()` and
 `rawExamples()` expose the original data. Serializing a sense with Gson writes
 the API field names and raw strings, rather than Minecraft component internals.
 
-Display methods build fresh Minecraft text components using the string-based
-methods in the GUI package's `DictionaryTextStyles`, which calls the existing `ComponentFormatUtils` API without modifying it. Pronunciation regions retain the API's original labels. Each sense returns its English definition
+Display methods build fresh Minecraft text components using `ComponentFormatUtils`.
+GUI widgets apply their colors through `DictionaryTextStyles` to copies of those
+components. Pronunciation regions retain the API's original labels. Each sense returns its English definition
 from `englishDefinition()` and Chinese translation from `translation()`.
 Example components contain the English text followed by the Chinese translation
 on a new line. Pronunciations use one `AreaPronunciation` record for all regions,
 storing the original region code, phonetic string and audio URL. Display labels
-such as `UKEn` and `USEn` are computed by `area()` and are not written into `lang`.
+such as `UK_En` and `US_En` are computed by `area()` and are not written into `lang`.
 
 `rawPronunciations()` contains `PronunciationData` records, and `rawForms()`
 contains `WordFormData` records. The display accessors build area-based
